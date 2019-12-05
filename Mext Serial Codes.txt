@@ -1,0 +1,826 @@
+## serial protocol
+
+//// input (to serialosc/device)
+
+// sys
+
+/sys/prefix
+/sys/port
+/sys/host
+
+pattern:	/sys/query
+desc:		request device information
+serial:		[0x00]
+
+pattern:	/sys/id
+desc:		request device ID string
+serial:		[0x01]
+
+pattern:	/sys/size
+desc:		request grid size
+serial:		[0x05]
+
+// led-grid
+
+pattern:	/prefix/led/set x y s
+desc:		set led state
+args:		x = x value (0-255)
+			y = y value (0-255)
+			s = on/off (0-1)
+serial:		if s = 0, [0x10, x, y]
+			if s = 1, [0x11, x, y]
+
+pattern:	/prefix/led/all s
+desc:		set all leds
+args:		s = on/off (0-1)
+serial:		if s = 0, [0x12]
+			if s = 1, [0x13]
+
+pattern:	/prefix/led/map x y d[8]
+desc:		set 8x8 block of leds, with offset
+args:		x = x offset, will be floored to multiple of 8 by firmware
+			y = y offset, will be floored to multiple of 8 by firmware
+			d[8] = bitwise display data
+serial:		[0x14, x, y, d[8]]
+
+pattern:	/prefix/led/row x y d
+desc:		set 8x1 block of leds, with offset
+args:		x = x offset, will be floored to multiple of 8 by firmware
+			y = y offset
+			d = bitwise display data
+serial:		[0x15, x, y, d]
+note:		d can be an array. for each additional element, another serial packet is sent, with x offset incremented by 8.
+
+pattern:	/prefix/led/col x y d
+desc:		set 1x8 block of leds, with offset
+args:		x = x offset
+			y = y offset, will be floored to multiple of 8 by firmware
+			d = bitwise display data
+serial:		[0x16 x, y, d]
+note:		d can be an array. for each additional element, another serial packet is sent, with y offset incremented by 8.
+
+pattern:	/prefix/led/intensity i
+desc:		set intensity for entire grid
+args:		i = intensity (0-15)
+serial:		[0x17, i]
+
+pattern:	/prefix/led/level/set x y i
+desc:		set led intensity
+args:		x = x value (0-255)
+			y = y value (0-255)
+			i = intensity (0-255)
+serial:		[0x18, x, y, i]
+
+pattern:	/prefix/led/level/all s
+desc:		set all leds to level
+args:		i = intensity (0-255)
+serial:		[0x19, i]
+
+pattern:	/prefix/led/level/map x y d[64]
+desc:		set 8x8 block of leds levels, with offset
+args:		x = x offset, will be floored to multiple of 8 by firmware
+			y = y offset, will be floored to multiple of 8 by firmware
+			d[64] = intensities
+serial:		[0x1A, x, y, d[64]]
+
+pattern:	/prefix/led/level/row x y d[8]
+desc:		set 8x1 block of led levels, with offset
+args:		x = x offset, will be floored to multiple of 8 by firmware
+			y = y offset
+			d[8] = intensities
+serial:		[0x1B, x, y, d[8]]
+note:		if d[8] has more than 8 elements (multiple of 8) send multiple serial packets with proper offset
+
+pattern:	/prefix/led/level/col x y d[8]
+desc:		set 1x8 block of led levels, with offset
+args:		x = x offset
+			y = y offset, will be floored to multiple of 8 by firmware
+			d = bitwise display data
+serial:		[0x1C x, y, d[8]]
+note:		if d[8] has more than 8 elements (multiple of 8) send multiple serial packets with proper offset
+
+
+// led-ring
+
+pattern:	/prefix/ring/set n x a
+desc:		set led x of ring n to value a
+args:		n = ring number
+			x = led number
+			a = value (0-15)
+serial:		[0x90, n, x, a]
+
+pattern:	/prefix/ring/all n a
+desc:		set all leds of ring n to a
+args:		n = ring number
+			a = value
+serial:		[0x91, n, a]
+
+pattern:	/prefix/ring/map n d[32]
+desc:		set leds of ring n to array d
+args:		n = ring number
+			d[32] = 64 states, 4 bit values, in 32 consecutive bytes
+			d[0] (0:3) value 0
+			d[0] (4:7) value 1
+			d[1] (0:3) value 2
+			....
+			d[31] (0:3) value 62
+			d[31] (4:7) value 63
+serial:		[0x92, n d[32]]
+
+pattern:	/prefix/ring/range n x1 x2 a
+desc:		set leds inclusive from x1 and x2 of ring n to a
+args:		n = ring number
+			x1 = starting position
+			x2 = ending position
+			a = value
+serial:		[0x93, n, x1, x2, a]
+note:		set range x1-x2 (inclusive) to a. wrapping supported, ie. set range 60,4 would set values 60,61,62,63,0,1,2,3,4. always positive direction sweep. ie. 4,10 = 4,5,6,7,8,9,10 whereas 10,4 = 10,11,12,13...63,0,1,2,3,4
+
+
+
+//// output (from serialosc/device)
+
+// sys
+
+pattern:	/sys/query s n
+desc:		device information
+serial:		[0x00, s, n]
+args:		s = subsection, enumerated as strings [null, "led-grid", "key-grid", "digital-out", "digital-in", "encoder", "analog-in", "analog-out", "tilt", "led-ring"]
+			n = number
+
+pattern:	/sys/id s[64]
+desc:		device ID string
+serial:		[0x01, s[64]]
+args:		s = id string, 64 chars
+
+pattern:	/sys/size x y
+desc:		grid size
+serial:		[0x05, x, y]
+args:		x = x size
+			y = y size
+
+// key
+
+pattern:	/prefix/key x y s
+desc:		key state change
+serial:		if s = 0 [0x00, x, y] key up
+			if s = 1 [0x01, x, y] key down
+args:		x = x position
+			y = y position
+
+// encoder
+
+pattern:	/prefix/enc/delta n d
+desc:		encoder position change
+serial:		[0x50, n, d]
+args:		n = encoder number
+			d = delta (signed char)
+
+pattern:	/prefix/enc/key n d
+desc:		encoder position change
+serial:		if d = 0 [0x51 n] key up
+			if d = 1 [0x52 n] key down
+args:		n = encoder number
+
+
+
+
+
+monome protocol
+---------------
+
+- extended to support variety of control, room for extensibility
+- to be implemented on mk, new editions, arc, arc-variants (axis?)
+- take advantage of i2c device chain system
+- remove dependence on device usb serial number, replace with query system
+
+
+
+notes
+-----
+
+new serial prefix: tty.usbserial-m0000000
+
+mk set-number of grids, firmware versions for each size 1/2/4
+
+should grid offsets live inside the grid subsystem?
+	applies to both led-grid and key-grid.
+	should each have it's own?
+
+"all" vs "clear"
+
+legacy bridge
+	ie /press => /key
+	ie /clear => /led/all 0
+
+
+structure
+---------
+
+first byte of packet is identifier in the form:
+
+[(a << 4) + b]
+
+a = section (ie. system, key-grid, digital, encoder, led grid, tilt)
+b = command (ie. query, enable, led, key, frame)
+
+
+organized by section:
+
+
+---------------------------------------------------------------------
+0 system
+---------------------------------------------------------------------
+
+note: most of these messages are not accessible via OSC
+	intended for device configuration
+
+to device:
+----------
+
+OSC:
+/sys/query
+	mapped to 0x00
+/sys/id
+	mapped to 0x01
+/sys/size
+	mapped to 0x05
+
+0x00 system / query
+bytes: 1
+structure: [0x00]
+description: request device information
+action: response, 0x00 (see below)
+OSC: /sys/query
+
+0x01 system / query ID
+bytes: 1
+structure: [0x01]
+description: request device ID (text string, trailing space needs to be stripped)
+action: response, 0x01 (see below)
+
+0x02 system / write ID
+bytes: 33
+structure: [0x02, d0..31]
+description: write ID (text string)
+response: confirms written id, 0x01
+
+0x03 system / request grid offsets
+bytes: 1
+structure: [0x03]
+description: request grid offsets. device will respond for each connected grid.
+action: response, 0x02
+
+0x04 system / set grid offset
+bytes: 4
+structure: [0x04, n, x, y]
+n = grid number
+x = x offset (floored to multiple of 8 by firmware)
+y = y offset (floored to multiple of 8 by firmware)
+description: set grid offset to (x, y)
+
+0x05 system / request grid size
+bytes: 1
+structure: [0x05]
+description: request grid size. device will respond with x,y
+action: response, 0x03
+
+0x06 system / set grid size
+bytes: 3
+structure: [0x06, x, y]
+x = x size
+y = y size
+description: set grid size to (x, y)
+
+0x07 system / get ADDR (scan)
+bytes: 1
+structure: [0x07]
+description: request list of connected components (i2c ADDRs)
+
+0x08 system / set ADDR
+bytes: 3
+structure: [0x08, a, b]
+a = ADDR to set
+b = new ADDR value
+description: set ADDR. writes internal eeprom. probably should reset afterwards?
+
+
+0x0F system / query firmware version
+bytes: 1
+structure: [0x0F]
+description: request firmware version
+
+from device:
+------------
+
+OSC:
+/sys/query
+	mapped to 0x00
+/sys/id
+	mapped to 0x01
+/sys/size
+	mapped to 0x03
+
+0x00 system / query response
+bytes: 3
+structure: [0x00, a, b]
+a = section (grids, encs)
+	1-15 (0 is system)
+b = number (how many connected)
+	0-255
+description: response to request for component availability. multiple responses will be sent, one for each section. for example, if two grids are connected and 8 encoders, the response would be [0,1,2] [0,2,8]
+OSC: /sys/query a b
+	where a is a text translation, b is number available. a = [null, "led-grid", "key-grid", "digital-out", etc]
+
+0x01 system / ID
+bytes: 33
+structure: [0x01, d0..31]
+description: respond with ID (text string)
+
+0x02 system / report grid offset
+bytes: 4
+structure: [0x02, n, x, y]
+n = grid number
+x = x offset
+y = y offset
+description: response to query, grid offset (x, y)
+
+0x03 system / report grid size
+bytes: 3
+structure: [0x03, x, y]
+x = x
+y = y
+description: response to query, grid size (x, y)
+
+0x04 system / report ADDR
+bytes: 3
+structure: [0x0F, a, b]
+a = ADDR
+description: found device at ADDR, type b
+
+0x0F system / report firmware version
+bytes: 9
+structure: [0x0F, v[8]]
+v = version, 8 character string
+description: firmware version
+
+
+---------------------------------------------------------------------
+1 led-grid
+---------------------------------------------------------------------
+
+to device:
+----------
+
+OSC:
+/led/set x y [0/1]
+	mapped to 0x10 and 0x11
+/led/all [0/1]
+	mapped to 0x12 and 0x13
+/led/map x y d[8]
+	mapped to 0x14
+/led/row x y d
+	mapped to 0x15
+/led/col x y d
+	mapped to 0x16
+/led/intensity x
+	mapped to 0x17
+
+0x10 led-grid / led off
+bytes: 3
+structure: [0x10, x, y]
+description: turn off led at (x,y)
+
+0x11 led-grid / led on
+bytes: 3
+structure: [0x11, x, y]
+description: turn on led at (x,y)
+
+0x12 led-grid / all off
+bytes: 1
+structure: [0x12]
+description: all leds off
+
+0x13 led-grid / all on
+bytes: 1
+structure: [0x13]
+description: all leds on
+
+0x14 led-grid / map (frame)
+bytes: 11
+structure: [0x14, x, y, d0..7]
+x = x offset (floored to multiple of 8 by firmware)
+y = y offset (floored to multiple of 8 by firmware)
+d = led states, 8x8 block (64 bits, 8 bytes)
+	sequential bytes represent rows (series of x values)
+description: write 8x8 block of led data
+
+0x15 led-grid / row
+bytes: 4
+structure: [0x15, x, y, d]
+x = x offset (floored to multiple of 8 by firmware)
+y = y value
+d = led states, 8 bits
+	bitwise
+description: write row of 8 bits at y, offset by x
+
+0x16 led-grid / col
+bytes: 4
+structure: [0x15, x, y, d]
+x = x value
+y = y offset (floored to multiple of 8 by firmware)
+d = led states, 8 bits
+	bitwise
+description: write row of 8 bits at x, offset by y
+
+0x17 led-grid / intensity
+bytes: 2
+structure: [0x18, a]
+a = intensity
+	0-255 (scaled inside firmware)
+description: change overall led intensity
+
+
+0x18 led-grid / set led intensity
+bytes: 4
+structure: [0x18, x, y, i]
+i = intensity
+	0-255 (scaled inside firmware)
+description: set led (x,y) to intensity i
+
+0x19 led-grid / set all leds to specified intensity
+bytes: 2
+structure: [0x19, i]
+i = intensity
+	0-255 (scaled inside firmware)
+description: set all leds to intensity i
+
+0x1A led-grid / map intensity
+bytes: 67
+structure: [0x14, x, y, d0..63]
+x = x offset (floored to multiple of 8 by firmware)
+y = y offset (floored to multiple of 8 by firmware)
+d = led intensities, 8bit each
+description: write 8x8 block of led intensity data
+
+0x1B led-grid / row intensity
+bytes: 11
+structure: [0x15, x, y, d0..8]
+x = x offset (floored to multiple of 8 by firmware)
+y = y value
+d = led intensities, 8 bytes
+description: set led intensities at row y, offset by x
+
+0x1C led-grid / col intensity
+bytes: 11
+structure: [0x15, x, y, d0..8]
+x = x value
+y = y offset (floored to multiple of 8 by firmware)
+d = led intensities, 8 bytes
+description: set led intensities at col x, offset by y
+
+
+
+
+from device:
+------------
+
+
+---------------------------------------------------------------------
+2 key-grid
+---------------------------------------------------------------------
+
+to device:
+----------
+
+from device:
+------------
+
+OSC:
+/key x y [0/1]
+	mapped to 0x20 and 0x21
+
+0x20 key-grid / key up
+bytes: 3
+structure: [0x20, x, y]
+description: key up at (x,y)
+
+0x21 key-grid / key down
+bytes: 3
+structure: [0x21, x, y]
+description: key down at (x,y)
+
+
+---------------------------------------------------------------------
+3 digital-out
+---------------------------------------------------------------------
+
+to device:
+----------
+
+OSC:
+/digital/out/set x [0/1]
+	mapped to 0x30 and 0x31
+/digital/out/clear [0/1]
+	mapped to 0x32 and 0x33
+/digital/out/block offset d
+	mapped to 0x34
+/digital/out/map d[32]
+	mapped to 0x35
+
+0x30 d-out / set off
+bytes: 2
+structure: [0x30, x]
+description: turn off digital out at (x)
+
+0x31 d-out / set on
+bytes: 2
+structure: [0x31, x]
+description: turn on digital out at (x)
+
+0x32 d-out / set all off
+bytes: 1
+structure: [0x32]
+description: turn off all digital outs
+
+0x33 d-out / set all on
+bytes: 1
+structure: [0x33]
+description: turn on all digital outs
+
+0x34 d-out / set block
+bytes: 3
+structure: [0x34, a, b]
+a = block offset (floored to multiple of 8 by firmware)
+b = digital states, bitwise
+	8 bits
+description: set block of 8 bits, offset by multiple of 8
+
+0x35 d-out / set all
+bytes: 33
+structure: [0x35, d0..31]
+d = digital states, bitwise
+	255 bits (32 bytes)
+description: set all digital states
+
+
+from device:
+------------
+
+
+---------------------------------------------------------------------
+4 digital-line-in
+---------------------------------------------------------------------
+
+to device:
+----------
+
+from device:
+------------
+
+OSC:
+/digital/in n [0/1]
+	mapped to 0x40 and 0x41
+
+0x40 d-line-in / change to low
+bytes: 2
+structure: [0x40, x]
+description: switch change low at (x)
+
+0x41 d-line-in / change to high
+bytes: 3
+structure: [0x41, x]
+description: switch change high at (x,y)
+
+
+---------------------------------------------------------------------
+5 encoder
+---------------------------------------------------------------------
+
+to device:
+----------
+
+from device:
+------------
+
+OSC:
+/enc/delta n d
+	mapped to 0x50
+/enc/key n [0/1]
+	mapped to 0x51 and 0x52
+
+0x50 enc / delta
+bytes: 3
+structure: [0x50, n, d]
+n = encoder number
+	0-255
+d = delta
+	(-128)-127 (two's comp 8 bit)
+description: encoder position change
+
+0x51 enc / switch up
+bytes: 2
+structure: [0x51, n]
+n = encoder number
+	0-255
+description: encoder switch up
+
+0x52 enc / switch down
+bytes: 2
+structure: [0x52, n]
+n = encoder number
+	0-255
+description: encoder switch down
+
+
+---------------------------------------------------------------------
+6 analog in
+---------------------------------------------------------------------
+
+to device:
+----------
+
+OSC:
+/analog/input/active
+	mapped to 0x60
+/analog/input/set n [0/1]
+	mapped to 0x61 and 0x62
+
+0x60 analog / state request
+bytes: 2
+structure: [0x80]
+description: request active states. device will reply with list.
+
+0x61 analog / set state on
+bytes: 2
+structure: [0x61, n]
+n = number
+	0-255
+description: enable individual analog input.
+
+0x62 analog / set state off
+bytes: 2
+structure: [0x62, n]
+n = number
+	0-255
+description: disable individual analog input.
+
+
+from device:
+------------
+
+OSC:
+/analog/input/active d[32]
+	mapped to 0x60
+/analog/input n x
+	mapped to 0x61
+
+0x60 analog / active response
+bytes: 33
+structure: [0x01, d0..31]
+d = states (32 bytes)
+	bitwise for total of 255 bits
+description: report which individual inputs are active
+
+0x61 analog in
+bytes: 4
+structure: [0x61, n, dh, dl]
+n = number
+	0-255
+(dh << 8) + dl = value (16 bit)
+	data high, data low
+description: analog input
+
+
+---------------------------------------------------------------------
+7 analog out
+---------------------------------------------------------------------
+
+to device:
+----------
+
+OSC:
+/analog/out n x
+	mapped to 0x70
+
+0x70 analog out
+bytes 4
+structure: [0x70, n, dh, dl]
+n = number
+	0-255
+(dh << 8) + dl = value (16 bit)
+	data high, data low
+description: analog output
+
+from device:
+------------
+
+
+---------------------------------------------------------------------
+8 tilt
+---------------------------------------------------------------------
+
+to device:
+----------
+
+OSC:
+/tilt/active
+	mapped to 0x80
+/tilt/set n [0/1]
+	mapped to 0x81 and 0x82
+
+0x80 tilt / state request
+bytes: 2
+structure: [0x80]
+description: request active states. device will reply with list.
+
+0x81 tilt / set state on
+bytes: 2
+structure: [0x81, n]
+n = number
+	0-7
+description: enable individual tilt sensor.
+
+0x82 tilt / set state off
+bytes: 2
+structure: [0x82, n]
+n = number
+	0-7
+description: disable individual tilt sensor.
+
+
+from device:
+------------
+
+OSC:
+/tilt/active d
+	mapped to 0x80
+/tilt n x y z
+	mapped to 0x81
+
+0x80 tilt / active response
+bytes: 9
+structure: [0x01, d]
+d = state (8 bits)
+	up to 8 tilt sensors
+description: report which tilt sensors are active
+
+0x81 tilt
+bytes 8
+structure: [0x80, n, xh, xl, yh, yl, zh, zl]
+n = sensor number (support for multiple accelerometers)
+description: 16-bit tilt input for x, y, z axis
+
+
+---------------------------------------------------------------------
+9 variable 64led ring
+---------------------------------------------------------------------
+
+to device:
+----------
+
+OSC:
+/ring/all n a
+	mapped to 0x90
+/ring/set n x a
+	mapped to 0x91
+/ring/map n d[64]
+	mapped to 0x92
+/ring/line n x1 x2 a
+	mapped to 0x93
+
+0x90 set single led
+bytes: 4
+structure: [0x90, n, x, a]
+n = group number
+x = led number
+a = value
+description: set led x of group n to value a
+
+0x91 set all to a
+bytes: 3
+structure: [0x91, n, a]
+n = group number (led ring number)
+a = value
+description: set entire group to value a
+
+0x92 set all values to d (64)
+bytes: 66
+structure: [0x92, n, d0..63]
+n = group number
+d = array of 64 values
+description: set all values of group to d (array)
+
+0x93 set range of elements to a
+bytes: 5
+structure: [0x93, n, x1, x2, a]
+n = group number
+x1 = start position
+x2 = end position
+a = value
+description: set range x1-x2 (inclusive) to a. wrapping supported, ie. set range 60,4 would set values 60,61,62,63,0,1,2,3,4. always positive direction sweep. ie. 4,10 = 4,5,6,7,8,9,10 whereas 10,4 = 10,11,12,13...63,0,1,2,3,4
+
+
+
+from device:
+------------
