@@ -1,14 +1,35 @@
-#include <Adafruit_NeoTrellis.h>
+/* 
+ *  NeoTrellis Grid
+ *  
+*/
+
+#include "Adafruit_NeoTrellis.h"
 #include "MonomeSerialDevice.h"
 
+// IF USING ADAFRUIT M0 or M4 BOARD
+#include <Arduino.h>
+#include <Adafruit_TinyUSB.h>
 
-#define DIM_X 4
-#define DIM_Y 4
+
+#define Y_DIM 4 //number of rows of key
+#define X_DIM 8 //number of columns of keys
 #define INT_PIN 9
 #define BRIGHTNESS 50
 
+#define NUMTRELLIS 1
+#define numKeys (NUMTRELLIS * 16)
+
+
+// DEVICE INFO FOR ADAFRUIT M0 or M4
+char mfgstr[32] = "monome";
+char prodstr[32] = "monome";
+
 // Monome setup
 #define MONOMEDEVICECOUNT 1
+
+// set your monome device name here
+String deviceID = "neotrellis-monome";
+
 
 MonomeSerial monomeDevices;
 //monomeDevices->isMonome = true;
@@ -16,136 +37,119 @@ MonomeSerial monomeDevices;
 //elapsedMillis monomeRefresh;
 
 
-Adafruit_NeoTrellis trellis_array[DIM_Y / 4][DIM_X / 4] = {
+Adafruit_NeoTrellis trellis_array[Y_DIM / 4][X_DIM / 4] = {
     { Adafruit_NeoTrellis(0x2F) }
 /*    , Adafruit_NeoTrellis(0x2F),Adafruit_NeoTrellis(0x30), Adafruit_NeoTrellis(0x31)},
     { Adafruit_NeoTrellis(0x32), Adafruit_NeoTrellis(0x33),Adafruit_NeoTrellis(0x34), Adafruit_NeoTrellis(0x35) }*/
 };
      
-Adafruit_MultiTrellis trellis((Adafruit_NeoTrellis *)trellis_array, DIM_Y / 4, DIM_X / 4);
+Adafruit_MultiTrellis trellis((Adafruit_NeoTrellis *)trellis_array, Y_DIM / 4, X_DIM / 4);
+
 
 boolean *lit_keys;
 
-String deviceID = "m128000000";
-
-uint32_t ledBuffer[DIM_X][DIM_Y];
+uint32_t ledBuffer[X_DIM][Y_DIM];
 uint32_t prevReadTime = 0;
 uint32_t prevWriteTime = 0;
 uint8_t currentWriteX = 0;
 
-// ***************************************************************************
-// **                         FUNCIONES PARA TRELLIS                        **
-// **                          FUNCTIONS FOR TRELLIS                        **   
-// ***************************************************************************
-
-void setLED(uint8_t x, uint8_t y, uint32_t value) { ledBuffer[x][y] = value; }
-
-void setAllLEDs(uint32_t value) {
-  uint8_t x, y;
-
-  for (x = 0; x < DIM_X; x++) {
-    for (y = 0; y < DIM_Y; y++) {
-      ledBuffer[x][y] = value;
-    }
+// Pad a string of length 'len' with nulls
+void pad_with_nulls(char* s, int len) {
+  int l = strlen(s);
+  for( int i=l;i<len; i++) {
+    s[i] = '\0';
   }
 }
 
-void turnOffLEDs() { setAllLEDs(0x000000); }
-void turnOnLEDs() { setAllLEDs(0xFFFFFF); }
+// ***************************************************************************
+// **                          FUNCTIONS FOR TRELLIS                        **   
+// ***************************************************************************
 
-void PintarMatriz(){
-	// unoptimised (show):
-	{
-		for (uint8_t x = 0; x < DIM_X; x++) {
-		  for (uint8_t y = 0; y < DIM_Y; y++) {
-			trellis.setPixelColor(x, y, ledBuffer[x][y]);
-			//String valor = (String)ledBuffer[x][y];
-			//Serial.println(String(x) + " " + (String)y + " = " + valor);       
-		  }
-		}
-    	trellis.show();
-	}
-}
 
-// NOT SURE THIS IS USED?
 
-void processPushButton(){
-    uint8_t x, y, i, keypad_count;
 
-    if (!digitalRead(INT_PIN)) {
-		for (x = 0; x < DIM_X / 4; x++) {
-			for (y = 0; y < DIM_Y / 4; y++) {
-			  keypad_count = trellis_array[y][x].getKeypadCount();
+// ***************************************************************************
+// **                                HELPERS                                **
+// ***************************************************************************
 
-			  keyEventRaw e[keypad_count];
-			  trellis_parts[y][x].readKeypad(e, keypad_count);
 
-			  for (i = 0; i < keypad_count; i++) {
-				uint8_t xx = e[i].bit.NUM % 4;
-				uint8_t yy = e[i].bit.NUM / 8;
-   
-				if (e[i].bit.EDGE == SEESAW_KEYPAD_EDGE_FALLING) {
-				  writeInt(0x21);
-				} else {
-				  writeInt(0x20);
-				}
-				writeInt(x * 4 + xx);
-				writeInt(y * 4 + yy); 
-	
-			  }
-			}
-		}
-    }
+// Input a value 0 to 255 to get a color value.
+// The colors are a transition r - g - b - back to r.
+uint32_t Wheel(byte WheelPos) {
+  if(WheelPos < 85) {
+   return seesaw_NeoPixel::Color(WheelPos * 3, 255 - WheelPos * 3, 0);
+  } else if(WheelPos < 170) {
+   WheelPos -= 85;
+   return seesaw_NeoPixel::Color(255 - WheelPos * 3, 0, WheelPos * 3);
+  } else {
+   WheelPos -= 170;
+   return seesaw_NeoPixel::Color(0, WheelPos * 3, 255 - WheelPos * 3);
+  }
+  return 0;
 }
 
 //define a callback for key presses
 TrellisCallback blink(keyEvent evt){
   
-  if(evt.bit.EDGE == SEESAW_KEYPAD_EDGE_RISING)
+  if(evt.bit.EDGE == SEESAW_KEYPAD_EDGE_RISING){
+    // press stuff
+    Serial.println(" pressed ");
     trellis.setPixelColor(evt.bit.NUM, Wheel(map(evt.bit.NUM, 0, X_DIM*Y_DIM, 0, 255))); //on rising
-  else if(evt.bit.EDGE == SEESAW_KEYPAD_EDGE_FALLING)
+
+    //monomeDevices.sendGridKey(x, y, 1);
+
+  }else if(evt.bit.EDGE == SEESAW_KEYPAD_EDGE_FALLING){
+    // release stuff
+    Serial.println(" released ");
     trellis.setPixelColor(evt.bit.NUM, 0); //off falling
+ 
+    //monomeDevices.sendGridKey(x, y, 0);
     
   trellis.show();
   return 0;
+  }
 }
 
+// ***************************************************************************
+// **                                 SETUP                                 **
+// ***************************************************************************
 
 void setup(){
 	Serial.begin(115200);
-    
+
+  Serial.println("--NeoTrellis Monome--");
+
+  pad_with_nulls(mfgstr, 32);
+  pad_with_nulls(prodstr, 32);
+  
+  USBDevice.setManufacturerDescriptor(mfgstr);
+  USBDevice.setProductDescriptor(prodstr);
+
+
 	if(!trellis.begin()){
 		Serial.println("failed to begin trellis");
 		while(1);
 	}
 	//trellis.setBrightness(BRIGHTNESS);
 
-	Serial.println("--NeoTrellis Monome--");
-
-// WHAT'S THIS ABOUT?
-	lit_keys = new boolean[trellis.num_keys()];  
-	for (int i=0; i<trellis.num_keys(); i++) {
-		lit_keys[i] = false;
-	}
-	
-	// Configura la matrix con brillo inicial.
-	// full brightness bricks arduino, probably a current thing
 	uint8_t x, y;
-	for (x = 0; x < DIM_X / 4; x++) {
-		for (y = 0; y < DIM_Y / 4; y++) {
-		  trellis_parts[y][x].pixels.setBrightness(BRIGHTNESS);  // DOES THIS NEED TO HAPPEN FOR EACH PIXEL?
-		}
-	}
-	for (x = 0; x < DIM_X; x++) {
-		for (y = 0; y < DIM_Y; y++) {
+
+// rainbow startup 
+  for(int i=0; i<Y_DIM*X_DIM; i++){
+      trellis.setPixelColor(i, Wheel(map(i, 0, X_DIM*Y_DIM, 0, 255))); //addressed with keynum
+      trellis.show();
+      delay(50);
+  }
+	for (x = 0; x < X_DIM; x++) {
+		for (y = 0; y < Y_DIM; y++) {
 		  trellis.activateKey(x, y, SEESAW_KEYPAD_EDGE_RISING, true);
 		  trellis.activateKey(x, y, SEESAW_KEYPAD_EDGE_FALLING, true);
+      trellis.registerCallback(x, y, blink);
+      trellis.setPixelColor(x, y, 0x000000); //addressed with x,y
+      trellis.show(); //show all LEDs
 		}
 	}
-	// Declara el pin de interrupción (indica que se ha pulsado algún botón)
-	pinMode(INT_PIN, INPUT);
 
-	turnOffLEDs();
 }
 
 // ***************************************************************************
@@ -154,26 +158,15 @@ void setup(){
 
 void loop() {
 	unsigned long now = millis();
-	// put your main code here, to run repeatedly:
-	trellis.tick();
 
-	while(trellis.available()){
-		keypadEvent e = trellis.read();
-		Serial.print((int)e.bit.KEY);
-		if (e.bit.EDGE == SEESAW_KEYPAD_EDGE_RISING) {
-			Serial.println(" pressed");
-			// press stuff
-			monomeDevices.sendGridKey(x, y, 1);
+   if (Serial.available() > 0) {
+      do {
+//        processSerial();
+      } while (Serial.available() > 16);
+    }
 
-			trellis.setPixelColor(e.bit.KEY, 0xFFFFFF);
-		} else if (e.bit.EDGE == SEESAW_KEYPAD_EDGE_FALLING) {
-			Serial.println(" released");
-			// release stuff
-			monomeDevices.sendGridKey(x, y, 0);
-
-			trellis.setPixelColor(e.bit.KEY, 0x0);
-		}
-	}
+     trellis.read();
+ 
   
 	//delay(10);
 }
