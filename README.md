@@ -2,7 +2,7 @@
 
 ## What is it?
 
-
+Code for a set of Adafruit NeoTrellis boards to be used as a monome grid clone.
 
 ## mext
 
