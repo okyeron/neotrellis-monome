@@ -3,12 +3,15 @@
  *  
 */
 
-#include "Adafruit_NeoTrellis.h"
 #include "MonomeSerialDevice.h"
+#include <Adafruit_NeoTrellis.h>
+#include <Arduino.h>
 
 // IF USING ADAFRUIT M0 or M4 BOARD
-#include <Arduino.h>
-#include <Adafruit_TinyUSB.h>
+#define M0 0
+//#include <Arduino.h>
+//#include <Adafruit_TinyUSB.h>
+//#include <elapsedMillis.h>
 
 
 #define Y_DIM 4 //number of rows of key
@@ -16,9 +19,8 @@
 #define INT_PIN 9
 #define BRIGHTNESS 50
 
-#define NUMTRELLIS 1
-#define numKeys (NUMTRELLIS * 16)
-
+#define NUMTRELLIS 2
+#define NUM_KEYS (NUMTRELLIS * 16)
 
 // DEVICE INFO FOR ADAFRUIT M0 or M4
 char mfgstr[32] = "monome";
@@ -26,15 +28,12 @@ char prodstr[32] = "monome";
 
 // Monome setup
 #define MONOMEDEVICECOUNT 1
+MonomeSerial mdp;
+elapsedMillis monomeRefresh;
 
 // set your monome device name here
 String deviceID = "neotrellis-monome";
 
-
-MonomeSerial monomeDevices;
-//monomeDevices->isMonome = true;
-//monomeDevices->setupAsGrid(8, 16);
-//elapsedMillis monomeRefresh;
 
 
 Adafruit_NeoTrellis trellis_array[Y_DIM / 4][X_DIM / 4] = {
@@ -72,7 +71,18 @@ void pad_with_nulls(char* s, int len) {
 // **                                HELPERS                                **
 // ***************************************************************************
 
-
+/*
+void i2xy(uint8_t i, uint8_t *x, uint8_t *y) {
+  if (i > NUM_KEYS) {
+    *x = *y = 255;
+    return;
+  }
+  // uint8_t xy = pgm_read_byte(&i2xy64[i]);
+  uint8_t xy = pgm_read_byte((NUM_KEYS == 64) ? &i2xy64[i] : &i2xy128[i]);
+  *x = xy >> 4;
+  *y = xy & 15;
+}
+*/
 // Input a value 0 to 255 to get a color value.
 // The colors are a transition r - g - b - back to r.
 uint32_t Wheel(byte WheelPos) {
@@ -90,24 +100,27 @@ uint32_t Wheel(byte WheelPos) {
 
 //define a callback for key presses
 TrellisCallback blink(keyEvent evt){
-  
+  uint8_t x;
+  uint8_t y;
   if(evt.bit.EDGE == SEESAW_KEYPAD_EDGE_RISING){
     // press stuff
-    Serial.println(" pressed ");
-    trellis.setPixelColor(evt.bit.NUM, Wheel(map(evt.bit.NUM, 0, X_DIM*Y_DIM, 0, 255))); //on rising
-
-    //monomeDevices.sendGridKey(x, y, 1);
+    trellis.setPixelColor(evt.bit.NUM, 0xffffff); //on rising
+    x  = evt.bit.NUM % Y_DIM;
+    y = evt.bit.NUM / X_DIM;
+    //Serial.println(" pressed ");
+    mdp.sendGridKey(x, y, 1);
 
   }else if(evt.bit.EDGE == SEESAW_KEYPAD_EDGE_FALLING){
     // release stuff
-    Serial.println(" released ");
     trellis.setPixelColor(evt.bit.NUM, 0); //off falling
- 
-    //monomeDevices.sendGridKey(x, y, 0);
-    
+    x  = evt.bit.NUM % Y_DIM;
+    y = evt.bit.NUM / X_DIM;
+    //Serial.println(" released ");
+    mdp.sendGridKey(x, y, 0);
+  }  
   trellis.show();
   return 0;
-  }
+  
 }
 
 // ***************************************************************************
@@ -115,15 +128,19 @@ TrellisCallback blink(keyEvent evt){
 // ***************************************************************************
 
 void setup(){
-	Serial.begin(115200);
-
-  Serial.println("--NeoTrellis Monome--");
-
+// for Adafruit M0 or M4
+/*
   pad_with_nulls(mfgstr, 32);
   pad_with_nulls(prodstr, 32);
-  
   USBDevice.setManufacturerDescriptor(mfgstr);
   USBDevice.setProductDescriptor(prodstr);
+*/
+	Serial.begin(115200);
+
+  mdp.isMonome = true;
+  mdp.setupAsGrid(8, 8);
+//  delay(200);
+//  mdp.getDeviceInfo();
 
 
 	if(!trellis.begin()){
@@ -138,7 +155,7 @@ void setup(){
   for(int i=0; i<Y_DIM*X_DIM; i++){
       trellis.setPixelColor(i, Wheel(map(i, 0, X_DIM*Y_DIM, 0, 255))); //addressed with keynum
       trellis.show();
-      delay(50);
+      delay(10);
   }
 	for (x = 0; x < X_DIM; x++) {
 		for (y = 0; y < Y_DIM; y++) {
@@ -149,6 +166,7 @@ void setup(){
       trellis.show(); //show all LEDs
 		}
 	}
+  Serial.println("--NeoTrellis Monome--");
 
 }
 
@@ -159,14 +177,15 @@ void setup(){
 void loop() {
 	unsigned long now = millis();
 
-   if (Serial.available() > 0) {
-      do {
-//        processSerial();
-      } while (Serial.available() > 16);
+    mdp.poll(); // process incoming serial from Monomes
+    
+    trellis.read();
+
+    if (monomeRefresh > 50) {
+        for (int i = 0; i < MONOMEDEVICECOUNT; i++) mdp.refresh();
+        monomeRefresh = 0;
     }
 
-     trellis.read();
- 
   
 	//delay(10);
 }

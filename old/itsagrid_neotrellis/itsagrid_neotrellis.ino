@@ -264,7 +264,7 @@ void processSerial() {
           Serial.write(deviceID[i]);          
         }
         else {
-          Serial.write(' ');           
+          Serial.write('\0');           
         }
       }
       break;

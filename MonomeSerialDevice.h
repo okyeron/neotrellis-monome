@@ -18,7 +18,7 @@ class MonomeArcEvent {
 
 class MonomeEventQueue {
     public:
-        void clearQueue();
+        //void clearQueue();
         
         bool gridEventAvailable();
         MonomeGridEvent readGridEvent();
