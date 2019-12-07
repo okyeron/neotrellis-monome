@@ -83,7 +83,7 @@ class MonomeSerial : public MonomeEventQueue {
         static const int variMonoThresh = 0;
         static const int MAXLEDCOUNT = 512;
         uint8_t leds[MAXLEDCOUNT];
-
+        String deviceID;
         
     private : 
         bool arcDirty = false;

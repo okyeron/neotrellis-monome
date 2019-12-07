@@ -61,7 +61,6 @@ void MonomeSerial::setAllLEDs(int value) {
 void MonomeSerial::setGridLed(uint8_t x, uint8_t y, uint8_t level) {
     int index = x + (y << 4);
     if (index < MAXLEDCOUNT) leds[index] = level;
-    //Serial.println("setGridLed");
 }
         
 void MonomeSerial::clearGridLed(uint8_t x, uint8_t y) {
@@ -105,7 +104,7 @@ void MonomeSerial::refresh() {
     int ind, led;
 
     if (gridDirty) {
-        //Serial.print("gridDirty");
+        //Serial.println("gridDirty");
         buf[0] = 0x1A;
         buf[1] = 0;
         buf[2] = 0;
@@ -209,7 +208,7 @@ void MonomeSerial::refresh() {
 
 void MonomeSerial::processSerial() {
     //Serial.println("processSerial");
-    String deviceID = "neotrellis-monome";
+    
     String devID;
     uint8_t numGrids = 1;
     
@@ -395,7 +394,7 @@ void MonomeSerial::processSerial() {
           intensity = Serial.read();                      // set brightness for entire grid
           // this is probably not right
           setAllLEDs(intensity);
-          //sendBufferedLeds();  // send commands
+
           break;
 
         case 0x18:                                //  /prefix/led/level/set x y i
@@ -404,14 +403,12 @@ void MonomeSerial::processSerial() {
           intensity = Serial.read();                  // read the intensity
 
           if (intensity > variMonoThresh) {       // because monobright, if intensity > variMonoThresh
-            //writeBufferedLed(readX, readY, intensity);
             setGridLed(readX, readY, intensity);      //   set the pixel
           }
           else {
-            //writeBufferedLed(readX, readY, 0);
             setGridLed(readX, readY, 0);              //   otherwise clear the pixel
           }
-          //sendBufferedLeds();
+
           break;
 
         case 0x19:                               //  /prefix/led/level/all s
@@ -421,8 +418,8 @@ void MonomeSerial::processSerial() {
             setAllLEDs(intensity);
           }
           else {
-            setAllLEDs(0);
-            //turnOffLEDs();                       // turn off if intensity = 0
+            setAllLEDs(0);                    // turn off if intensity = 0
+            //turnOffLEDs();                       
           }
           //sendBufferedLeds();  // send commands
           break;
