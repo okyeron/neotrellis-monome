@@ -135,7 +135,7 @@ void setup(){
   
   mdp.isMonome = true;
   mdp.deviceID = deviceID;
-  mdp.setupAsGrid(4, 4);
+  mdp.setupAsGrid(Y_DIM, X_DIM);
 //  delay(200);
 //  mdp.getDeviceInfo();
 
