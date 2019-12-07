@@ -197,7 +197,9 @@ void loop() {
     if (monomeRefresh > 50) {
         for (int i = 0; i < MONOMEDEVICECOUNT; i++) {
           //mdp.refresh(); 
-          //sendLeds();
+          sendLeds();
+          trellis.show();
+
         }
         monomeRefresh = 0;
     }
