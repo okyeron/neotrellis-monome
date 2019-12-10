@@ -93,8 +93,8 @@ uint32_t Wheel(byte WheelPos) {
 TrellisCallback blink(keyEvent evt){
   uint8_t x;
   uint8_t y;
-  x  = evt.bit.NUM % 16 // Y_DIM;
-  y = evt.bit.NUM / 16 // X_DIM;
+  x  = evt.bit.NUM % 16; // Y_DIM;
+  y = evt.bit.NUM / 16; // X_DIM;
   if(evt.bit.EDGE == SEESAW_KEYPAD_EDGE_RISING){
     //trellis.setPixelColor(evt.bit.NUM, 0xFFFFFF); //on rising
     //Serial.println(" pressed ");
