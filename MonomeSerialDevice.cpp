@@ -1,9 +1,9 @@
 #include "MonomeSerialDevice.h"
 #include "debug.h"
 
-MonomeSerial::MonomeSerial() {}
+MonomeSerialDevice::MonomeSerialDevice() {}
 
-void MonomeSerial::initialize() {
+void MonomeSerialDevice::initialize() {
     active = false;
     isMonome = false;
     isGrid = true;
@@ -16,7 +16,7 @@ void MonomeSerial::initialize() {
     gridDirty = false;
 }
 
-void MonomeSerial::setupAsGrid(uint8_t _rows, uint8_t _columns) {
+void MonomeSerialDevice::setupAsGrid(uint8_t _rows, uint8_t _columns) {
     initialize();
     active = true;
     isMonome = true;
@@ -27,7 +27,7 @@ void MonomeSerial::setupAsGrid(uint8_t _rows, uint8_t _columns) {
     debugfln(INFO, "GRID rows: %d columns %d", rows, columns);
 }
 
-void MonomeSerial::setupAsArc(uint8_t _encoders) {
+void MonomeSerialDevice::setupAsArc(uint8_t _encoders) {
     initialize();
     active = true;
     isMonome = true;
@@ -37,69 +37,71 @@ void MonomeSerial::setupAsArc(uint8_t _encoders) {
     debugfln(INFO, "ARC encoders: %d", encoders);
 }
 
-void MonomeSerial::getDeviceInfo() {
-    //debugln(INFO, "MonomeSerial::getDeviceInfo");
+void MonomeSerialDevice::getDeviceInfo() {
+    //debugln(INFO, "MonomeSerialDevice::getDeviceInfo");
     Serial.write(uint8_t(0));
  }
 
-void MonomeSerial::poll() {
+void MonomeSerialDevice::poll() {
     while (isMonome && Serial.available()) { processSerial(); };
     //while (Serial.available()) processSerial();
     //Serial.println("processSerial");
 }
 
 
-void MonomeSerial::setAllLEDs(int value) {
-  uint8_t i, j;
+void MonomeSerialDevice::setAllLEDs(int value) {
+  for (int i = 0; i < MAXLEDCOUNT; i++) leds[i] = value;
+/*  uint8_t i, j;
   for (i = 0; i < gridX; i++) {
     for (j = 0; j < gridY; j++) {
         setGridLed(i, j, value);
     }
   }
+*/
 }
 
-void MonomeSerial::setGridLed(uint8_t x, uint8_t y, uint8_t level) {
+void MonomeSerialDevice::setGridLed(uint8_t x, uint8_t y, uint8_t level) {
     int index = x + (y << 4);
     if (index < MAXLEDCOUNT) leds[index] = level;
 }
         
-void MonomeSerial::clearGridLed(uint8_t x, uint8_t y) {
+void MonomeSerialDevice::clearGridLed(uint8_t x, uint8_t y) {
     setGridLed(x, y, 0);
     //Serial.println("clearGridLed");
 }
 
-void MonomeSerial::setArcLed(uint8_t enc, uint8_t led, uint8_t level) {
+void MonomeSerialDevice::setArcLed(uint8_t enc, uint8_t led, uint8_t level) {
     int index = led + (enc << 6);
     if (index < MAXLEDCOUNT) leds[index] = level;
     //Serial.println("setArcLed");
 }
         
-void MonomeSerial::clearArcLed(uint8_t enc, uint8_t led) {
+void MonomeSerialDevice::clearArcLed(uint8_t enc, uint8_t led) {
     setArcLed(enc, led, 0);
     //Serial.println("clearArcLed");
 }
 
-void MonomeSerial::clearAllLeds() {
+void MonomeSerialDevice::clearAllLeds() {
     for (int i = 0; i < MAXLEDCOUNT; i++) leds[i] = 0;
     //Serial.println("clearAllLeds");
 }
 
-void MonomeSerial::clearArcRing(uint8_t ring) {
+void MonomeSerialDevice::clearArcRing(uint8_t ring) {
     for (int i = ring << 6, upper = i + 64; i < upper; i++) leds[i] = 0;
     //Serial.println("clearArcRing");
 }
 
-void MonomeSerial::refreshGrid() {
+void MonomeSerialDevice::refreshGrid() {
     gridDirty = true;
     //Serial.println("refreshGrid");
 }
 
-void MonomeSerial::refreshArc() {
+void MonomeSerialDevice::refreshArc() {
     arcDirty = true;
     //Serial.println("refreshArc");
 }
 
-void MonomeSerial::refresh() {
+void MonomeSerialDevice::refresh() {
     uint8_t buf[35];
     int ind, led;
 
@@ -206,7 +208,7 @@ void MonomeSerial::refresh() {
 
 
 
-void MonomeSerial::processSerial() {
+void MonomeSerialDevice::processSerial() {
     //Serial.println("processSerial");
     
     String devID;
@@ -320,13 +322,11 @@ void MonomeSerial::processSerial() {
 
         case 0x12:            //  /prefix/led/all [0/1]  / all off
           clearAllLeds();
-          //turnOffLEDs();
           //sendBufferedLeds();  // send commands
           break;
 
         case 0x13:                      //  /prefix/led/all [0/1] / all on
           setAllLEDs(15);
-          //turnOnLEDs();
           //sendBufferedLeds();  // send commands
           break;
 

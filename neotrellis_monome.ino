@@ -14,13 +14,14 @@
 //#include <elapsedMillis.h>
 
 
-#define Y_DIM 4 //number of rows of key
+#define Y_DIM 8 //number of rows of key
 #define X_DIM 4 //number of columns of keys
 #define INT_PIN 9
 #define BRIGHTNESS 50
 
-#define NUMTRELLIS 1
+#define NUMTRELLIS 2
 #define NUM_KEYS (NUMTRELLIS * 16)
+
 
 // DEVICE INFO FOR ADAFRUIT M0 or M4
 char mfgstr[32] = "monome";
@@ -32,18 +33,20 @@ String deviceID = "neo-monome";
 
 // Monome class setup
 #define MONOMEDEVICECOUNT 1
-MonomeSerial mdp;
+MonomeSerialDevice mdp;
 elapsedMillis monomeRefresh;
 
+// R,G,B Values for grid color
+uint8_t GridColor[] = { 255,185,0 }; // amber {255,200,0}
 
 // NeoTrellis setup
 Adafruit_NeoTrellis trellis_array[Y_DIM / 4][X_DIM / 4] = {
+    { Adafruit_NeoTrellis(0x2E) },
     { Adafruit_NeoTrellis(0x2F) }
 /*   , Adafruit_NeoTrellis(0x2E) ,Adafruit_NeoTrellis(0x30), Adafruit_NeoTrellis(0x31)},
     { Adafruit_NeoTrellis(0x32), Adafruit_NeoTrellis(0x33),Adafruit_NeoTrellis(0x34), Adafruit_NeoTrellis(0x35) }*/
 };
 Adafruit_MultiTrellis trellis((Adafruit_NeoTrellis *)trellis_array, Y_DIM / 4, X_DIM / 4);
-
 
 
 uint32_t prevReadTime = 0;
@@ -171,9 +174,9 @@ void setup(){
 void sendLeds(){
   uint8_t r, g, b, l;
   uint32_t hexval;
-  r = 0;
-  g = 255;
-  b = 0;
+  r = GridColor[0];
+  g = GridColor[1];
+  b = GridColor[2];
   
   for(int i=0; i<Y_DIM*X_DIM; i++){
     l = mdp.leds[i];

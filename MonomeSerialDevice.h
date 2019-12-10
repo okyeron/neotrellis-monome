@@ -51,9 +51,9 @@ class MonomeEventQueue {
         int arcFirstEvent = 0;
 };
 
-class MonomeSerial : public MonomeEventQueue {
+class MonomeSerialDevice : public MonomeEventQueue {
     public: 
-        MonomeSerial();
+        MonomeSerialDevice();
         void initialize();
         void setupAsGrid(uint8_t _rows, uint8_t _columns);
         void setupAsArc(uint8_t _encoders);
@@ -89,7 +89,7 @@ class MonomeSerial : public MonomeEventQueue {
         bool arcDirty = false;
         bool gridDirty = false;
         
-//        MonomeSerial();
+//        MonomeSerialDevice();
         void processSerial();
 };
 
