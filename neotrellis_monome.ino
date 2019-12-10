@@ -1,6 +1,8 @@
 /* 
  *  NeoTrellis Grid
  *  
+ *  Many thanks to scanner_darkly, Szymon Kaliski, John Park, todbot, Juanma and others
+ *
 */
 
 #include "MonomeSerialDevice.h"
@@ -14,21 +16,21 @@
 //#include <elapsedMillis.h>
 
 
-#define Y_DIM 8 //number of rows of key
-#define X_DIM 4 //number of columns of keys
+#define Y_DIM 8 //number of rows of keys across
+#define X_DIM 4 //number of columns of keys down
 #define INT_PIN 9
-#define BRIGHTNESS 50
+#define BRIGHTNESS 50 // is this used?
 
 #define NUMTRELLIS 2
 #define NUM_KEYS (NUMTRELLIS * 16)
 
 
+// set your monome device name here
+String deviceID = "neo-monome";
+
 // DEVICE INFO FOR ADAFRUIT M0 or M4
 char mfgstr[32] = "monome";
 char prodstr[32] = "monome";
-
-// set your monome device name here
-String deviceID = "neo-monome";
 
 
 // Monome class setup
@@ -37,7 +39,7 @@ MonomeSerialDevice mdp;
 elapsedMillis monomeRefresh;
 
 // R,G,B Values for grid color
-uint8_t GridColor[] = { 255,185,0 }; // amber {255,200,0}
+uint8_t GridColor[] = { 255,185,0 }; // amber? {255,200,0}
 
 // NeoTrellis setup
 Adafruit_NeoTrellis trellis_array[Y_DIM / 4][X_DIM / 4] = {
@@ -49,9 +51,15 @@ Adafruit_NeoTrellis trellis_array[Y_DIM / 4][X_DIM / 4] = {
 Adafruit_MultiTrellis trellis((Adafruit_NeoTrellis *)trellis_array, Y_DIM / 4, X_DIM / 4);
 
 
+// is this used?
 uint32_t prevReadTime = 0;
 uint32_t prevWriteTime = 0;
 uint8_t currentWriteX = 0;
+
+
+// ***************************************************************************
+// **                                HELPERS                                **
+// ***************************************************************************
 
 // Pad a string of length 'len' with nulls
 void pad_with_nulls(char* s, int len) {
@@ -61,29 +69,6 @@ void pad_with_nulls(char* s, int len) {
   }
 }
 
-// ***************************************************************************
-// **                          FUNCTIONS FOR TRELLIS                        **   
-// ***************************************************************************
-
-
-
-
-// ***************************************************************************
-// **                                HELPERS                                **
-// ***************************************************************************
-
-/*
-void i2xy(uint8_t i, uint8_t *x, uint8_t *y) {
-  if (i > NUM_KEYS) {
-    *x = *y = 255;
-    return;
-  }
-  // uint8_t xy = pgm_read_byte(&i2xy64[i]);
-  uint8_t xy = pgm_read_byte((NUM_KEYS == 64) ? &i2xy64[i] : &i2xy128[i]);
-  *x = xy >> 4;
-  *y = xy & 15;
-}
-*/
 // Input a value 0 to 255 to get a color value.
 // The colors are a transition r - g - b - back to r.
 uint32_t Wheel(byte WheelPos) {
@@ -99,12 +84,17 @@ uint32_t Wheel(byte WheelPos) {
   return 0;
 }
 
+// ***************************************************************************
+// **                          FUNCTIONS FOR TRELLIS                        **   
+// ***************************************************************************
+
+
 //define a callback for key presses
 TrellisCallback blink(keyEvent evt){
   uint8_t x;
   uint8_t y;
-  x  = evt.bit.NUM % Y_DIM;
-  y = evt.bit.NUM / X_DIM;
+  x  = evt.bit.NUM % 16 // Y_DIM;
+  y = evt.bit.NUM / 16 // X_DIM;
   if(evt.bit.EDGE == SEESAW_KEYPAD_EDGE_RISING){
     //trellis.setPixelColor(evt.bit.NUM, 0xFFFFFF); //on rising
     //Serial.println(" pressed ");
@@ -139,6 +129,7 @@ void setup(){
   mdp.isMonome = true;
   mdp.deviceID = deviceID;
   mdp.setupAsGrid(Y_DIM, X_DIM);
+
 //  delay(200);
 //  mdp.getDeviceInfo();
 
@@ -207,6 +198,5 @@ void loop() {
         monomeRefresh = 0;
     }
 
-  
-	delay(20);
+	delay(20); // What's this about?
 }
