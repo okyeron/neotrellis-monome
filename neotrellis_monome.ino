@@ -4,7 +4,6 @@
  *  Many thanks to scanner_darkly, Szymon Kaliski, John Park, todbot, Juanma and others
  *
 */
-
 #include "MonomeSerialDevice.h"
 #include <Adafruit_NeoTrellis.h>
 #include <Arduino.h>
@@ -16,14 +15,20 @@
 //#include <elapsedMillis.h>
 
 
-#define Y_DIM 8 //number of rows of keys across
-#define X_DIM 4 //number of columns of keys down
+#define NUM_ROWS 8 // DIM_Y number of rows of keys down
+#define NUM_COLS 8 // DIM_X number of columns of keys across
+#define NUM_LEDS NUM_ROWS*NUM_COLS
+
 #define INT_PIN 9
-#define BRIGHTNESS 50 // is this used?
+#define LED_PIN 13 // teensy LED used to show boot info
 
-#define NUMTRELLIS 2
-#define NUM_KEYS (NUMTRELLIS * 16)
+#define BRIGHTNESS 100 // overall grid brightnes - adjust lower if getting voltage droop
+#define R 255
+#define G 255
+#define B 255
 
+// R,G,B Values for grid color
+uint8_t GridColor[] = { R,G,B }; // amber? {255,200,0}
 
 // set your monome device name here
 String deviceID = "neo-monome";
@@ -32,29 +37,19 @@ String deviceID = "neo-monome";
 char mfgstr[32] = "monome";
 char prodstr[32] = "monome";
 
+elapsedMillis monomeRefresh;
+bool isInited = false;
 
 // Monome class setup
-#define MONOMEDEVICECOUNT 1
 MonomeSerialDevice mdp;
-elapsedMillis monomeRefresh;
-
-// R,G,B Values for grid color
-uint8_t GridColor[] = { 255,185,0 }; // amber? {255,200,0}
 
 // NeoTrellis setup
-Adafruit_NeoTrellis trellis_array[Y_DIM / 4][X_DIM / 4] = {
-    { Adafruit_NeoTrellis(0x2E) },
-    { Adafruit_NeoTrellis(0x2F) }
-/*   , Adafruit_NeoTrellis(0x2E) ,Adafruit_NeoTrellis(0x30), Adafruit_NeoTrellis(0x31)},
-    { Adafruit_NeoTrellis(0x32), Adafruit_NeoTrellis(0x33),Adafruit_NeoTrellis(0x34), Adafruit_NeoTrellis(0x35) }*/
+Adafruit_NeoTrellis trellis_array[NUM_ROWS / 4][NUM_COLS / 4] = {
+  { Adafruit_NeoTrellis(0x2E), Adafruit_NeoTrellis(0x2F) }, // top row
+  { Adafruit_NeoTrellis(0x36), Adafruit_NeoTrellis(0x3E) } // bottom row
 };
-Adafruit_MultiTrellis trellis((Adafruit_NeoTrellis *)trellis_array, Y_DIM / 4, X_DIM / 4);
+Adafruit_MultiTrellis trellis((Adafruit_NeoTrellis *)trellis_array, NUM_ROWS / 4, NUM_COLS / 4);
 
-
-// is this used?
-uint32_t prevReadTime = 0;
-uint32_t prevWriteTime = 0;
-uint8_t currentWriteX = 0;
 
 
 // ***************************************************************************
@@ -90,11 +85,11 @@ uint32_t Wheel(byte WheelPos) {
 
 
 //define a callback for key presses
-TrellisCallback blink(keyEvent evt){
+TrellisCallback keyCallback(keyEvent evt){
   uint8_t x;
   uint8_t y;
-  x  = evt.bit.NUM % 16; // Y_DIM;
-  y = evt.bit.NUM / 16; // X_DIM;
+  x  = evt.bit.NUM % NUM_COLS; //NUM_COLS; 
+  y = evt.bit.NUM / NUM_COLS; //NUM_COLS; 
   if(evt.bit.EDGE == SEESAW_KEYPAD_EDGE_RISING){
     //trellis.setPixelColor(evt.bit.NUM, 0xFFFFFF); //on rising
     //Serial.println(" pressed ");
@@ -106,8 +101,8 @@ TrellisCallback blink(keyEvent evt){
     mdp.sendGridKey(x, y, 0);
     mdp.refreshGrid();
   }
-  sendLeds();
-  trellis.show();
+  //sendLeds();
+  //trellis.show();
   return 0;
   
 }
@@ -128,7 +123,8 @@ void setup(){
   
   mdp.isMonome = true;
   mdp.deviceID = deviceID;
-  mdp.setupAsGrid(Y_DIM, X_DIM);
+  mdp.setupAsGrid(NUM_ROWS, NUM_COLS);
+  mdp.setAllLEDs(0);
 
 //  delay(200);
 //  mdp.getDeviceInfo();
@@ -138,42 +134,53 @@ void setup(){
 		Serial.println("failed to begin trellis");
 		while(1);
 	}
-	//trellis.setBrightness(BRIGHTNESS);
+  uint8_t x, y;
+  for (x = 0; x < NUM_COLS / 4; x++) {
+    for (y = 0; y < NUM_ROWS / 4; y++) {
+      trellis_array[y][x].pixels.setBrightness(BRIGHTNESS);
+    }
+  }
 
-	uint8_t x, y;
 
 // rainbow startup 
-  for(int i=0; i<Y_DIM*X_DIM; i++){
-      trellis.setPixelColor(i, Wheel(map(i, 0, X_DIM*Y_DIM, 0, 255))); //addressed with keynum
+  for(int i=0; i<NUM_ROWS*NUM_COLS; i++){
+      trellis.setPixelColor(i, Wheel(map(i, 0, NUM_ROWS*NUM_COLS, 0, 255))); //addressed with keynum
       trellis.show();
-      delay(10);
+      delay(1);
   }
-	for (x = 0; x < X_DIM; x++) {
-		for (y = 0; y < Y_DIM; y++) {
+  
+  // key callback
+	for (x = 0; x < NUM_COLS; x++) {
+		for (y = 0; y < NUM_ROWS; y++) {
 		  trellis.activateKey(x, y, SEESAW_KEYPAD_EDGE_RISING, true);
 		  trellis.activateKey(x, y, SEESAW_KEYPAD_EDGE_FALLING, true);
-      trellis.registerCallback(x, y, blink);
+      trellis.registerCallback(x, y, keyCallback);
       trellis.setPixelColor(x, y, 0x000000); //addressed with x,y
       trellis.show(); //show all LEDs
-      delay(50);
+      //delay(1);
 		}
 	}
-  //Serial.println("--NeoTrellis Monome--");
-
+  delay(500);
+  isInited = true;
 }
 
+
 void sendLeds(){
-  uint8_t r, g, b, l;
-  uint32_t hexval;
+  uint8_t value;
+  uint8_t r, g, b;
+  uint32_t hexColor;
   r = GridColor[0];
   g = GridColor[1];
   b = GridColor[2];
-  
-  for(int i=0; i<Y_DIM*X_DIM; i++){
-    l = mdp.leds[i];
-    hexval = (((r * l) >> 4) << 16) + (((g * l) >> 4) << 8) + ((b * l) >> 4);
-    trellis.setPixelColor(i, hexval);
+
+  for(int i=0; i< NUM_ROWS * NUM_COLS; i++){
+    value = mdp.leds[i];
+    hexColor = (((r * value) >> 4) << 16) + (((g * value) >> 4) << 8) + ((b * value) >> 4);
+    trellis.setPixelColor(i, hexColor);
+    
   }
+  trellis.show();
+  
 }
 
 
@@ -182,21 +189,15 @@ void sendLeds(){
 // ***************************************************************************
 
 void loop() {
-	//unsigned long now = millis();
 
     mdp.poll(); // process incoming serial from Monomes
-    
-    trellis.read();
 
-    if (monomeRefresh > 50) {
-        for (int i = 0; i < MONOMEDEVICECOUNT; i++) {
-          //mdp.refresh(); 
-          sendLeds();
-          trellis.show();
 
-        }
+    if (isInited && monomeRefresh > 20) {
+        trellis.read();
+        sendLeds();
         monomeRefresh = 0;
     }
 
-	delay(20); // What's this about?
+	//delay(20); // What's this about?
 }
