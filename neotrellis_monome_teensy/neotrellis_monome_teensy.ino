@@ -16,19 +16,21 @@
 
 
 #define NUM_ROWS 8 // DIM_Y number of rows of keys down
-#define NUM_COLS 8 // DIM_X number of columns of keys across
+#define NUM_COLS 16 // DIM_X number of columns of keys across
 #define NUM_LEDS NUM_ROWS*NUM_COLS
 
 #define INT_PIN 9
 #define LED_PIN 13 // teensy LED used to show boot info
 
-#define BRIGHTNESS 100 // overall grid brightnes - adjust lower if getting voltage droop
+#define BRIGHTNESS  // overall grid brightnes - 35 seems to be OK for all leds at full brightness
 #define R 255
 #define G 255
-#define B 255
+#define B 200
+//  amber? {255,191,0}
+//  warmer white? {255,255,200}
 
 // R,G,B Values for grid color
-uint8_t GridColor[] = { R,G,B }; // amber? {255,200,0}
+uint8_t GridColor[] = { R,G,B }; 
 
 // set your monome device name here
 String deviceID = "neo-monome";
@@ -45,8 +47,8 @@ MonomeSerialDevice mdp;
 
 // NeoTrellis setup
 Adafruit_NeoTrellis trellis_array[NUM_ROWS / 4][NUM_COLS / 4] = {
-  { Adafruit_NeoTrellis(0x2E), Adafruit_NeoTrellis(0x2F) }, // top row
-  { Adafruit_NeoTrellis(0x36), Adafruit_NeoTrellis(0x3E) } // bottom row
+  { Adafruit_NeoTrellis(0x33), Adafruit_NeoTrellis(0x31), Adafruit_NeoTrellis(0x2F), Adafruit_NeoTrellis(0x2E)}, // top row
+  { Adafruit_NeoTrellis(0x35), Adafruit_NeoTrellis(0x39), Adafruit_NeoTrellis(0x3F), Adafruit_NeoTrellis(0x37) } // bottom row
 };
 Adafruit_MultiTrellis trellis((Adafruit_NeoTrellis *)trellis_array, NUM_ROWS / 4, NUM_COLS / 4);
 
@@ -124,7 +126,7 @@ void setup(){
   mdp.isMonome = true;
   mdp.deviceID = deviceID;
   mdp.setupAsGrid(NUM_ROWS, NUM_COLS);
-  mdp.setAllLEDs(0);
+// mdp.setAllLEDs(0);
 
 //  delay(200);
 //  mdp.getDeviceInfo();
@@ -155,17 +157,20 @@ void setup(){
 		  trellis.activateKey(x, y, SEESAW_KEYPAD_EDGE_RISING, true);
 		  trellis.activateKey(x, y, SEESAW_KEYPAD_EDGE_FALLING, true);
       trellis.registerCallback(x, y, keyCallback);
-      trellis.setPixelColor(x, y, 0x000000); //addressed with x,y
-      trellis.show(); //show all LEDs
+//      trellis.setPixelColor(x, y, 0x000000); //addressed with x,y
+//      trellis.show(); //show all LEDs
       //delay(1);
 		}
 	}
   delay(500);
+  mdp.setAllLEDs(0);
+  sendLeds();
   isInited = true;
 }
 
 
 void sendLeds(){
+  bool isDirty = false;
   uint8_t value;
   uint8_t r, g, b;
   uint32_t hexColor;
@@ -177,10 +182,11 @@ void sendLeds(){
     value = mdp.leds[i];
     hexColor = (((r * value) >> 4) << 16) + (((g * value) >> 4) << 8) + ((b * value) >> 4);
     trellis.setPixelColor(i, hexColor);
-    
+    isDirty = true;
   }
-  trellis.show();
-  
+  if (isDirty) {
+    trellis.show();
+  }  
 }
 
 
@@ -191,13 +197,12 @@ void sendLeds(){
 void loop() {
 
     mdp.poll(); // process incoming serial from Monomes
-
-
-    if (isInited && monomeRefresh > 20) {
+ 
+    // refresh every 16ms or so
+    if (isInited && monomeRefresh > 16) {
         trellis.read();
         sendLeds();
         monomeRefresh = 0;
     }
 
-	//delay(20); // What's this about?
 }
