@@ -36,7 +36,7 @@ String deviceID = "neo-monome";
 
 static const int MAXLEDCOUNT = 128;
 uint8_t leds[MAXLEDCOUNT];
-int prevLedBuffer[MAXLEDCOUNT];  // ????
+uint8_t prevLedBuffer[MAXLEDCOUNT];  // ????
 
 // DEVICE INFO FOR ADAFRUIT M0 or M4
 char mfgstr[32] = "monome";
@@ -467,14 +467,7 @@ void setup(){
         trellis_array[y][x].pixels.setBrightness(BRIGHTNESS);
       }
     }
-    
-    // rainbow startup 
-    for(int i=0; i<NUM_ROWS*NUM_COLS; i++){
-        trellis.setPixelColor(i, Wheel(map(i, 0, NUM_ROWS*NUM_COLS, 0, 255))); //addressed with keynum
-        trellis.show();
-        delay(2);
-    }
-    
+       
     // key callback
     for (x = 0; x < NUM_COLS; x++) {
       for (y = 0; y < NUM_ROWS; y++) {
@@ -485,8 +478,17 @@ void setup(){
     }
 
     delay(500);
+
+    // rainbow startup 
+    for(int i=0; i<NUM_ROWS*NUM_COLS; i++){
+        trellis.setPixelColor(i, Wheel(map(i, 0, NUM_ROWS*NUM_COLS, 0, 255))); //addressed with keynum
+        trellis.show();
+        delay(1);
+    }
+
     setAllLEDs(0);
     sendLeds();
+ 
     monomeRefresh = 0;
     isInited = true;
 
