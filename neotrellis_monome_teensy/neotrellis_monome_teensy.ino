@@ -452,6 +452,7 @@ void setup(){
   USBDevice.setProductDescriptor(prodstr);
 */
   Serial.begin(115200);
+  
   trellis.begin();
   
 /*  if(!trellis.begin()){
@@ -484,10 +485,11 @@ void setup(){
     }
 
     delay(500);
+    setAllLEDs(0);
+    sendLeds();
     monomeRefresh = 0;
     isInited = true;
-    clearAllLeds();
-    sendLeds();
+
 }
 
 
