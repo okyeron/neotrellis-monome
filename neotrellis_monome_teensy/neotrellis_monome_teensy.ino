@@ -22,7 +22,7 @@
 #define INT_PIN 9
 #define LED_PIN 13 // teensy LED used to show boot info
 
-#define BRIGHTNESS  // overall grid brightnes - 35 seems to be OK for all leds at full brightness
+#define BRIGHTNESS 35 // overall grid brightnes - 35 seems to be OK for all leds at full brightness
 #define R 255
 #define G 255
 #define B 200
@@ -41,6 +41,7 @@ char prodstr[32] = "monome";
 
 elapsedMillis monomeRefresh;
 bool isInited = false;
+int prevLedBuffer[512];
 
 // Monome class setup
 MonomeSerialDevice mdp;
@@ -93,15 +94,15 @@ TrellisCallback keyCallback(keyEvent evt){
   x  = evt.bit.NUM % NUM_COLS; //NUM_COLS; 
   y = evt.bit.NUM / NUM_COLS; //NUM_COLS; 
   if(evt.bit.EDGE == SEESAW_KEYPAD_EDGE_RISING){
-    //trellis.setPixelColor(evt.bit.NUM, 0xFFFFFF); //on rising
+    //on
     //Serial.println(" pressed ");
     mdp.sendGridKey(x, y, 1);
-    mdp.refreshGrid();
+    //mdp.refreshGrid();
   }else if(evt.bit.EDGE == SEESAW_KEYPAD_EDGE_FALLING){
-    //trellis.setPixelColor(evt.bit.NUM, 0); //off falling
+    //off 
     //Serial.println(" released ");
     mdp.sendGridKey(x, y, 0);
-    mdp.refreshGrid();
+    //mdp.refreshGrid();
   }
   //sendLeds();
   //trellis.show();
@@ -143,12 +144,11 @@ void setup(){
     }
   }
 
-
 // rainbow startup 
   for(int i=0; i<NUM_ROWS*NUM_COLS; i++){
       trellis.setPixelColor(i, Wheel(map(i, 0, NUM_ROWS*NUM_COLS, 0, 255))); //addressed with keynum
       trellis.show();
-      delay(1);
+      delay(2);
   }
   
   // key callback
@@ -157,9 +157,6 @@ void setup(){
 		  trellis.activateKey(x, y, SEESAW_KEYPAD_EDGE_RISING, true);
 		  trellis.activateKey(x, y, SEESAW_KEYPAD_EDGE_FALLING, true);
       trellis.registerCallback(x, y, keyCallback);
-//      trellis.setPixelColor(x, y, 0x000000); //addressed with x,y
-//      trellis.show(); //show all LEDs
-      //delay(1);
 		}
 	}
   delay(500);
@@ -170,13 +167,13 @@ void setup(){
 
 
 void sendLeds(){
-  bool isDirty = false;
   uint8_t value;
   uint8_t r, g, b;
   uint32_t hexColor;
   r = GridColor[0];
   g = GridColor[1];
   b = GridColor[2];
+  bool isDirty = false;
 
   for(int i=0; i< NUM_ROWS * NUM_COLS; i++){
     value = mdp.leds[i];
@@ -184,6 +181,7 @@ void sendLeds(){
     trellis.setPixelColor(i, hexColor);
     isDirty = true;
   }
+
   if (isDirty) {
     trellis.show();
   }  

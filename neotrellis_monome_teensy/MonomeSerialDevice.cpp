@@ -44,7 +44,9 @@ void MonomeSerialDevice::getDeviceInfo() {
 
 void MonomeSerialDevice::poll() {
     //while (isMonome && Serial.available()) { processSerial(); };
-    while (Serial.available()) processSerial();
+    if (Serial.available()) {
+      processSerial();
+    }
     //Serial.println("processSerial");
 }
 
@@ -525,14 +527,6 @@ void MonomeSerialDevice::processSerial() {
             */
             break;
 
-    // 0x3x are digital out
-    // 0x4x are digital line in
-
-        case 0x40:  //   d-line-in / change to low
-            break;
-        case 0x41:  //   d-line-in / change to high
-            break;
-
         // 0x5x are encoder
         case 0x50:
             // bytes: 3
@@ -585,10 +579,6 @@ void MonomeSerialDevice::processSerial() {
             // description: encoder switch down
             break;
 
-        case 0x60:  //   analog / active response - 33 bytes [0x01, d0..31]
-            break;
-        case 0x61:  //   analog in - 4 bytes [0x61, n, dh, dl]
-            break;
         case 0x80:  //   tilt / active response - 9 bytes [0x01, d]
             break;
         case 0x81:  //   tilt - 8 bytes [0x80, n, xh, xl, yh, yl, zh, zl]
@@ -694,7 +684,8 @@ void MonomeSerialDevice::processSerial() {
           // always positive direction sweep. ie. 4,10 = 4,5,6,7,8,9,10 whereas 10,4 = 10,11,12,13...63,0,1,2,3,4 
          break;
 
-        default: break;
+        default: 
+          break;
     }
 }
 
