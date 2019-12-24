@@ -112,6 +112,7 @@ void MonomeSerialDevice::refreshArc() {
 }
 
 void MonomeSerialDevice::refresh() {
+/*
     uint8_t buf[35];
     int ind, led;
 
@@ -214,6 +215,7 @@ void MonomeSerialDevice::refresh() {
 
         arcDirty = 0;
     }
+*/
 }
 
 
@@ -221,7 +223,6 @@ void MonomeSerialDevice::refresh() {
 void MonomeSerialDevice::processSerial() {
     //Serial.println("processSerial");
     
-    uint8_t numGrids = 1;
     
     uint8_t identifierSent;  // command byte sent from controller to matrix
 //  uint8_t devSect, devNum, gridNum, 
@@ -234,6 +235,7 @@ void MonomeSerialDevice::processSerial() {
     int8_t delta;
     uint8_t gridX    = columns;          // Will be either 8 or 16
     uint8_t gridY    = rows;           // standard for 128
+    uint8_t numQuads = columns/rows;
     
     // get command identifier: first byte of packet is identifier in the form: [(a << 4) + b]
     // a = section (ie. system, key-grid, digital, encoder, led grid, tilt)
@@ -246,8 +248,8 @@ void MonomeSerialDevice::processSerial() {
         	// [null, "led-grid", "key-grid", "digital-out", "digital-in", "encoder", "analog-in", "analog-out", "tilt", "led-ring"]
             //Serial.println("0x00 system / query ----------------------");
             Serial.write((uint8_t)0x00); // action: response, 0x00 = system
-            Serial.write((uint8_t)0x02); // section id, 2 = key-grid, 5 = encoder/arc	## NEED devSect variable
-            Serial.write((uint8_t)numGrids);   // one grid is 64 buttons - 			## NEED numgrids variable
+            Serial.write((uint8_t)0x01); // section id, 1 = led-grid, 2 = key-grid, 5 = encoder/arc	## NEED devSect variable
+            Serial.write((uint8_t)numQuads);   // one Quad is 64 buttons
 
             break;
 

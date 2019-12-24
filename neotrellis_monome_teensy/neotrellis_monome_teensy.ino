@@ -6,7 +6,7 @@
 */
 #include "MonomeSerialDevice.h"
 #include <Adafruit_NeoTrellis.h>
-#include <Arduino.h>
+
 
 // IF USING ADAFRUIT M0 or M4 BOARD
 #define M0 0
@@ -39,9 +39,10 @@ String deviceID = "neo-monome";
 char mfgstr[32] = "monome";
 char prodstr[32] = "monome";
 
-elapsedMillis monomeRefresh;
 bool isInited = false;
-int prevLedBuffer[512];
+elapsedMillis monomeRefresh;
+
+int prevLedBuffer[512];  // ????
 
 // Monome class setup
 MonomeSerialDevice mdp;
@@ -132,11 +133,14 @@ void setup(){
 //  delay(200);
 //  mdp.getDeviceInfo();
 
-
-	if(!trellis.begin()){
+  trellis.begin();
+  
+/*	if(!trellis.begin()){
 		Serial.println("failed to begin trellis");
 		while(1);
 	}
+*/
+  // set overall brightness for all pixels
   uint8_t x, y;
   for (x = 0; x < NUM_COLS / 4; x++) {
     for (y = 0; y < NUM_ROWS / 4; y++) {
@@ -162,6 +166,7 @@ void setup(){
   delay(500);
   mdp.setAllLEDs(0);
   sendLeds();
+  monomeRefresh = 0;
   isInited = true;
 }
 
