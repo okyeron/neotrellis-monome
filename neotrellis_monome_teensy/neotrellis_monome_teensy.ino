@@ -149,12 +149,13 @@ void setup(){
   }
 
 // rainbow startup 
+/*
   for(int i=0; i<NUM_ROWS*NUM_COLS; i++){
       trellis.setPixelColor(i, Wheel(map(i, 0, NUM_ROWS*NUM_COLS, 0, 255))); //addressed with keynum
       trellis.show();
       delay(2);
   }
-  
+*/ 
   // key callback
 	for (x = 0; x < NUM_COLS; x++) {
 		for (y = 0; y < NUM_ROWS; y++) {
@@ -170,27 +171,32 @@ void setup(){
   isInited = true;
 }
 
+// ***************************************************************************
+// **                                SEND LEDS                              **
+// ***************************************************************************
 
 void sendLeds(){
-  uint8_t value;
-  uint8_t r, g, b;
+  uint8_t value, prevValue = 0;
   uint32_t hexColor;
-  r = GridColor[0];
-  g = GridColor[1];
-  b = GridColor[2];
   bool isDirty = false;
-
+  
   for(int i=0; i< NUM_ROWS * NUM_COLS; i++){
     value = mdp.leds[i];
-    hexColor = (((r * value) >> 4) << 16) + (((g * value) >> 4) << 8) + ((b * value) >> 4);
-    trellis.setPixelColor(i, hexColor);
-    isDirty = true;
-  }
+    prevValue = prevLedBuffer[i];
+    if (value != prevValue) {
+      hexColor = (((R * value) >> 4) << 16) + (((G * value) >> 4) << 8) + ((B * value) >> 4);
+      trellis.setPixelColor(i, hexColor);
 
+      prevLedBuffer[i] = value;
+      isDirty = true;
+    }
+  }
   if (isDirty) {
     trellis.show();
-  }  
+  }
+
 }
+
 
 
 // ***************************************************************************
