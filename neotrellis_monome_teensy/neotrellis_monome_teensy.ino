@@ -34,19 +34,9 @@ uint8_t GridColor[] = { R,G,B };
 // set your monome device name here
 String deviceID = "neo-monome";
 
-bool active;
-bool isMonome;
-bool isGrid;
-uint8_t rows;
-uint8_t columns;
-uint8_t encoders;
-uint8_t gridX;
-uint8_t gridY;
-static const int variMonoThresh = 0;
 static const int MAXLEDCOUNT = 128;
 uint8_t leds[MAXLEDCOUNT];
-bool arcDirty = false;
-bool gridDirty = false;
+int prevLedBuffer[MAXLEDCOUNT];  // ????
 
 // DEVICE INFO FOR ADAFRUIT M0 or M4
 char mfgstr[32] = "monome";
@@ -54,9 +44,6 @@ char prodstr[32] = "monome";
 
 bool isInited = false;
 elapsedMillis monomeRefresh;
-
-int prevLedBuffer[MAXLEDCOUNT];  // ????
-
 
 // NeoTrellis setup
 Adafruit_NeoTrellis trellis_array[NUM_ROWS / 4][NUM_COLS / 4] = {
@@ -101,135 +88,43 @@ uint32_t Wheel(byte WheelPos) {
 
 //define a callback for key presses
 TrellisCallback keyCallback(keyEvent evt){
-  uint8_t x;
-  uint8_t y;
-  x  = evt.bit.NUM % NUM_COLS; //NUM_COLS; 
-  y = evt.bit.NUM / NUM_COLS; //NUM_COLS; 
+  uint8_t x  = evt.bit.NUM % NUM_COLS; //NUM_COLS; 
+  uint8_t y = evt.bit.NUM / NUM_COLS; //NUM_COLS; 
+
   if(evt.bit.EDGE == SEESAW_KEYPAD_EDGE_RISING){
     //on
-    //Serial.println(" pressed ");
     sendGridKey(x, y, 1);
   }else if(evt.bit.EDGE == SEESAW_KEYPAD_EDGE_FALLING){
     //off 
-    //Serial.println(" released ");
     sendGridKey(x, y, 0);
   }
-  //sendLeds();
-  //trellis.show();
   return 0;
   
-}
-
-// ***************************************************************************
-// **                                 SETUP                                 **
-// ***************************************************************************
-
-void setup(){
-/*
-// for Adafruit M0 or M4
-  pad_with_nulls(mfgstr, 32);
-  pad_with_nulls(prodstr, 32);
-  USBDevice.setManufacturerDescriptor(mfgstr);
-  USBDevice.setProductDescriptor(prodstr);
-*/
-	Serial.begin(115200);
-  
-  isMonome = true;
-  setupAsGrid(NUM_ROWS, NUM_COLS);
-
-//  delay(200);
-
-  trellis.begin();
-  
-/*	if(!trellis.begin()){
-		Serial.println("failed to begin trellis");
-		while(1);
-	}
-*/
-  // set overall brightness for all pixels
-  uint8_t x, y;
-  for (x = 0; x < NUM_COLS / 4; x++) {
-    for (y = 0; y < NUM_ROWS / 4; y++) {
-      trellis_array[y][x].pixels.setBrightness(BRIGHTNESS);
-    }
-  }
-
-// rainbow startup 
-  for(int i=0; i<NUM_ROWS*NUM_COLS; i++){
-      trellis.setPixelColor(i, Wheel(map(i, 0, NUM_ROWS*NUM_COLS, 0, 255))); //addressed with keynum
-      trellis.show();
-      delay(2);
-  }
-  
-  // key callback
-	for (x = 0; x < NUM_COLS; x++) {
-		for (y = 0; y < NUM_ROWS; y++) {
-		  trellis.activateKey(x, y, SEESAW_KEYPAD_EDGE_RISING, true);
-		  trellis.activateKey(x, y, SEESAW_KEYPAD_EDGE_FALLING, true);
-      trellis.registerCallback(x, y, keyCallback);
-		}
-	}
-  delay(500);
-  setAllLEDs(0);
-  sendLeds();
-  monomeRefresh = 0;
-  isInited = true;
 }
 
 // ***************************************************************************
 // **                                MONOME SERIAL                          **
 // ***************************************************************************
 
-void initialize() {
-    active = false;
-    isMonome = false;
-    isGrid = true;
-    rows = 0;
-    columns = 0;
-    encoders = 0;
-    clearAllLeds();
-    arcDirty = false;
-    gridDirty = false;
-}
 
-void setupAsGrid(uint8_t _rows, uint8_t _columns) {
-    initialize();
-    active = true;
-    isMonome = true;
-    isGrid = true;
-    rows = _rows;
-    columns = _columns;
-    gridDirty = true;
-}
-void setupAsArc(uint8_t _encoders) {
-    initialize();
-    active = true;
-    isMonome = true;
-    isGrid = false;
-    encoders = _encoders;
-    arcDirty = true;
-}
 void getDeviceInfo() {
     Serial.write(uint8_t(0));
  }
-
-void poll() {
-    //while (isMonome && Serial.available()) { processSerial(); };
-    if (Serial.available()) {
-      processSerial();
-    }
-}
 
 void setAllLEDs(int value) {
   for (int i = 0; i < MAXLEDCOUNT; i++) leds[i] = value;
 }
 
+void clearAllLeds() {
+    for (int i = 0; i < MAXLEDCOUNT; i++) leds[i] = 0;
+}
+
 void setGridLed(uint8_t x, uint8_t y, uint8_t level) {
-    if (x >= columns || y >= rows) {
+    if (x >= NUM_COLS || y >= NUM_ROWS) {
       return;
     }
     int index;
-    if (columns > 8){
+    if (NUM_COLS > 8){
       index = x + (y << 4);
     }else{
       index = x + (y << 3);
@@ -250,10 +145,6 @@ void clearArcLed(uint8_t enc, uint8_t led) {
     setArcLed(enc, led, 0);
 }
 
-void clearAllLeds() {
-    for (int i = 0; i < MAXLEDCOUNT; i++) leds[i] = 0;
-}
-
 void clearArcRing(uint8_t ring) {
     for (int i = ring << 6, upper = i + 64; i < upper; i++) leds[i] = 0;
 }
@@ -268,9 +159,7 @@ void processSerial() {
     uint8_t gridKeyX;
     uint8_t gridKeyY;
     int8_t delta;
-    uint8_t gridX    = columns;          // Will be either 8 or 16
-    uint8_t gridY    = rows;           // standard for 128
-    uint8_t numQuads = columns/rows;
+    uint8_t numQuads = NUM_COLS/NUM_ROWS;
     
     // get command identifier: first byte of packet is identifier in the form: [(a << 4) + b]
     // a = section (ie. system, key-grid, digital, encoder, led grid, tilt)
@@ -322,8 +211,8 @@ void processSerial() {
         case 0x05:
             //Serial.println("0x05");
             Serial.write((uint8_t)0x03);             // system / request grid size
-            Serial.write((uint8_t)gridX);                // gridX
-            Serial.write((uint8_t)gridY);                // gridY
+            Serial.write((uint8_t)NUM_COLS);                // gridX
+            Serial.write((uint8_t)NUM_ROWS);                // gridY
             break;
 
         case 0x06:
@@ -421,8 +310,7 @@ void processSerial() {
         case 0x17:                                     //  /prefix/led/intensity i
           intensity = Serial.read();                      // set brightness for entire grid
           // this is probably not right
-          setAllLEDs(intensity);
-
+          //setAllLEDs(intensity);
           break;
 
         case 0x18:                                //  /prefix/led/level/set x y i
@@ -455,14 +343,7 @@ void processSerial() {
               }
               z++;
             }
-          }
-            
-         /*
-          } else {
-            for (int q = 0; q<32; q++){
-              Serial.read();
-            }
-          }*/
+          }            
           break;
 
         case 0x1B:                                // /prefix/led/level/row x y d[8]
@@ -497,106 +378,7 @@ void processSerial() {
           }
           break;
 
-        // 0x90 variable 64 LED ring 
-        case 0x90:
-          //pattern:  /prefix/ring/set n x a
-          //desc:   set led x of ring n to value a
-          //args:   n = ring number
-          //      x = led number
-          //      a = value (0-15)
-          //serial:   [0x90, n, x, a]
-          readN = Serial.read();
-          readX = Serial.read();
-          readA = Serial.read();
-          //led_array[readN][readX] = readA;
-          setArcLed(readN, readX, readA);         
-          break;
-     
-        case 0x91:
-          //pattern:  /prefix/ring/all n a
-          //desc:   set all leds of ring n to a
-          //args:   n = ring number
-          //      a = value
-          //serial:   [0x91, n, a]
-          readN = Serial.read();
-          readA = Serial.read();
-          for (int q=0; q<64; q++){
-            setArcLed(readN, q, readA);
-            //led_array[readN][q]=readA;
-          }
-          break;
-      
-        case 0x92:
-          //pattern:  /prefix/ring/map n d[32]
-          //desc:   set leds of ring n to array d
-          //args:   n = ring number
-          //      d[32] = 64 states, 4 bit values, in 32 consecutive bytes
-          //      d[0] (0:3) value 0
-          //      d[0] (4:7) value 1
-          //      d[1] (0:3) value 2
-          //      ....
-          //      d[31] (0:3) value 62
-          //      d[31] (4:7) value 63
-          //serial:   [0x92, n d[32]]
-          readN = Serial.read();
-          for (y = 0; y < 64; y++) {
-              if (y % 2 == 0) {                    
-                intensity = Serial.read();
-                if ( (intensity >> 4 & 0x0F) > 0) {  // even bytes, use upper nybble
-                  //led_array[readN][y] = (intensity >> 4 & 0x0F);
-                  setArcLed(readN, y, (intensity >> 4 & 0x0F)); 
-                }
-                else {
-                  //led_array[readN][y]=0;
-                  setArcLed(readN, y, 0);   
-                }
-              } else {                              
-                if ((intensity & 0x0F) > 0 ) {      // odd bytes, use lower nybble
-                  //led_array[readN][y] = (intensity & 0x0F);
-                  setArcLed(readN, y, (intensity & 0x0F));
-                }
-                else {
-                  //led_array[readN][y]=0;
-                  setArcLed(readN, y, 0);
-                }
-              }
-          }
-          break;
-
-        case 0x93:
-          //pattern:  /prefix/ring/range n x1 x2 a
-          //desc:   set leds inclusive from x1 and x2 of ring n to a
-          //args:   n = ring number
-          //      x1 = starting position
-          //      x2 = ending position
-          //      a = value
-          //serial:   [0x93, n, x1, x2, a]
-          readN = Serial.read();
-          readX = Serial.read();  // x1
-          readY = Serial.read();  // x2
-          readA = Serial.read();
-          //memset(led_array[readN],0,sizeof(led_array[readN]));
-      
-          if (readX < readY){
-            for (y = readX; y < readY; y++) {
-              //led_array[readN][y] = readA;
-              setArcLed(readN, y, readA);
-            }
-          }else{
-            // wrapping?
-            for (y = readX; y < 64; y++) {
-              //led_array[readN][y] = readA;
-              setArcLed(readN, y, readA);
-            }
-            for (x = 0; x < readY; x++) {
-              //led_array[readN][x] = readA;
-              setArcLed(readN, y, readA);
-            }
-          }
-          //note:   set range x1-x2 (inclusive) to a. wrapping supported, ie. set range 60,4 would set values 60,61,62,63,0,1,2,3,4. 
-          // always positive direction sweep. ie. 4,10 = 4,5,6,7,8,9,10 whereas 10,4 = 10,11,12,13...63,0,1,2,3,4 
-         break;
-
+ 
         default: 
           break;
     }
@@ -635,21 +417,77 @@ void sendGridKey(uint8_t x, uint8_t y, uint8_t pressed) {
 // ***************************************************************************
 
 void sendLeds(){
-  uint8_t value;
-  uint8_t r, g, b;
+  uint8_t value, prevValue = 0;
   uint32_t hexColor;
-  r = GridColor[0];
-  g = GridColor[1];
-  b = GridColor[2];
   bool isDirty = false;
-
+  
   for(int i=0; i< NUM_ROWS * NUM_COLS; i++){
     value = leds[i];
-    hexColor = (((r * value) >> 4) << 16) + (((g * value) >> 4) << 8) + ((b * value) >> 4);
-    trellis.setPixelColor(i, hexColor);
-  }
-  trellis.show();
+    prevValue = prevLedBuffer[i];
+    if (value != prevValue) {
+      hexColor = (((R * value) >> 4) << 16) + (((G * value) >> 4) << 8) + ((B * value) >> 4);
+      trellis.setPixelColor(i, hexColor);
 
+      prevLedBuffer[i] = value;
+      isDirty = true;
+    }
+  }
+  if (isDirty) {
+    trellis.show();
+  }
+
+}
+
+
+// ***************************************************************************
+// **                                 SETUP                                 **
+// ***************************************************************************
+
+void setup(){
+/*
+// for Adafruit M0 or M4
+  pad_with_nulls(mfgstr, 32);
+  pad_with_nulls(prodstr, 32);
+  USBDevice.setManufacturerDescriptor(mfgstr);
+  USBDevice.setProductDescriptor(prodstr);
+*/
+  Serial.begin(115200);
+  trellis.begin();
+  
+/*  if(!trellis.begin()){
+    Serial.println("failed to begin trellis");
+    while(1);
+  }
+*/
+   // set overall brightness for all pixels
+    uint8_t x, y;
+    for (x = 0; x < NUM_COLS / 4; x++) {
+      for (y = 0; y < NUM_ROWS / 4; y++) {
+        trellis_array[y][x].pixels.setBrightness(BRIGHTNESS);
+      }
+    }
+    
+    // rainbow startup 
+    for(int i=0; i<NUM_ROWS*NUM_COLS; i++){
+        trellis.setPixelColor(i, Wheel(map(i, 0, NUM_ROWS*NUM_COLS, 0, 255))); //addressed with keynum
+        trellis.show();
+        delay(2);
+    }
+    
+    // key callback
+    for (x = 0; x < NUM_COLS; x++) {
+      for (y = 0; y < NUM_ROWS; y++) {
+        trellis.activateKey(x, y, SEESAW_KEYPAD_EDGE_RISING, true);
+        trellis.activateKey(x, y, SEESAW_KEYPAD_EDGE_FALLING, true);
+        trellis.registerCallback(x, y, keyCallback);
+      }
+    }
+
+    delay(500);
+    monomeRefresh = 0;
+    isInited = true;
+    clearAllLeds();
+    sendLeds();
 }
 
 
@@ -659,13 +497,24 @@ void sendLeds(){
 
 void loop() {
 
-    poll(); // process incoming serial from Monomes
+    // process incoming serial from Monomes
+    //while (isMonome && Serial.available()) { processSerial(); };
+    if (Serial.available()) {
+      processSerial();
+    }
+
  
     // refresh every 16ms or so
     if (isInited && monomeRefresh > 16) {
-        monomeRefresh = 0;
         trellis.read();
         sendLeds();
+        monomeRefresh = 0;
     }
 
+  // delayed init since trellis.begin() and trellis.activateKey() take some
+  // time, and norns starts sending serial messages right away
+  if (!isInited && monomeRefresh > 500) {
+//    trellis.begin();
+    
+  }
 }
