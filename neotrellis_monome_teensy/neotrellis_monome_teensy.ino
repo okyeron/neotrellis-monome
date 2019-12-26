@@ -29,9 +29,6 @@
 //  amber? {255,191,0}
 //  warmer white? {255,255,200}
 
-// R,G,B Values for grid color
-uint8_t GridColor[] = { R,G,B }; 
-
 // set your monome device name here
 String deviceID = "neo-monome";
 
@@ -42,7 +39,7 @@ char prodstr[32] = "monome";
 bool isInited = false;
 elapsedMillis monomeRefresh;
 
-int prevLedBuffer[512];  // ????
+int prevLedBuffer[512]; 
 
 // Monome class setup
 MonomeSerialDevice mdp;
