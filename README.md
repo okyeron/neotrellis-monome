@@ -15,6 +15,17 @@ There is code for using an Adafruit ItsyBitsy M0 (and by extension the Feather M
 
 The norns software requires some hacking/changes to get a DIY grid working. More on this later
 
+## neotrellis building/testing notes
+
+* Be sure you have the Adafruit Seesaw libraries installed (via the Arduino Library Manager)
+
+* Try to test each neotrellis board individually using the Adafruit examples in the File>Examples>Adafruit seesaw Library>Neotrellis menu. The Basic sketch is good for testing individual boards. The multitrellis>basic sketch is good once you have all the boards connected and addresses assigned.
+
+* [neotrellis i2c address chart](./NeoTrellis Addresses.txt) (for soldering the jumpers on each neotrellis board)
+
+* The multitrellis array will fail to init if the addresses are wrong, or the wrong number of boards are attached.
+
+* The Teensy specific i2c_t3 examples can be used to double check your i2c addresses. See File>Examples>i2c_t3>basic_scanner for more.
 
 ## references
 
