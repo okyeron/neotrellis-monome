@@ -31,6 +31,18 @@ The norns software requires some hacking/changes to get a DIY grid working. More
 
 * The Teensy specific i2c_t3 examples can be used to double check your i2c addresses. See File>Examples>i2c_t3>basic_scanner for more.
 
+## testing with serialosc on MacOS
+
+You may need to unload serialosc to get arduino to properly flash the teensy, then load serialosc to get Max to recognize the grid.  
+
+`launchctl load /Library/LaunchAgents/org.monome.serialosc.plist`  
+`launchctl load /Library/LaunchAgents/org.monome.serialosc.plist`  
+
+Max apps for testing:  
+[Monome Home](https://github.com/monome-community/monome-home)  
+[test-grid](https://github.com/monome/serialosc.maxpat)  
+
+
 ## references
 
 ### mext / monome serial protocol
