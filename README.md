@@ -33,9 +33,9 @@ The norns software requires some hacking/changes to get a DIY grid working. More
 
 ## testing with serialosc on MacOS
 
-You may need to unload serialosc to get arduino to properly flash the teensy, then load serialosc to get Max to recognize the grid.  
+If you already have serialosc installed/running, you may need to unload serialosc to get arduino to properly flash the teensy, then load serialosc to get Max to recognize the grid.  
 
-`launchctl load /Library/LaunchAgents/org.monome.serialosc.plist`  
+`launchctl unload /Library/LaunchAgents/org.monome.serialosc.plist`  
 `launchctl load /Library/LaunchAgents/org.monome.serialosc.plist`  
 
 Max apps for testing:  
