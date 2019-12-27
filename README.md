@@ -17,6 +17,10 @@ The norns software requires some hacking/changes to get a DIY grid working. More
 
 ## neotrellis building/testing notes
 
+* Review the [Adafruit tutorial on the neotrellis](https://learn.adafruit.com/adafruit-neotrellis/arduino-code) boards. NOTE - there's a typo on that page "the address would be 0x2E + 1 + 2 = 0x30." That address would be 0x31
+
+* Don't worry about the INT pin - it's not used in the grid software.
+
 * Be sure you have the Adafruit Seesaw libraries installed (via the Arduino Library Manager)
 
 * Try to test each neotrellis board individually using the Adafruit examples in the File>Examples>Adafruit seesaw Library>Neotrellis menu. The Basic sketch is good for testing individual boards. The multitrellis>basic sketch is good once you have all the boards connected and addresses assigned.
