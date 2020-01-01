@@ -6,7 +6,7 @@
 */
 #include "MonomeSerialDevice.h"
 #include <Adafruit_NeoTrellis.h>
-
+#include "debug.h"
 
 // IF USING ADAFRUIT M0 or M4 BOARD
 #define M0 0
@@ -17,10 +17,9 @@
 
 #define NUM_ROWS 8 // DIM_Y number of rows of keys down
 #define NUM_COLS 16 // DIM_X number of columns of keys across
-#define NUM_LEDS NUM_ROWS*NUM_COLS
 
 #define INT_PIN 9
-#define LED_PIN 13 // teensy LED used to show boot info
+#define LED_PIN 13 // teensy LED 
 
 #define BRIGHTNESS 35 // overall grid brightnes - 35 seems to be OK for all leds at full brightness
 #define R 255
@@ -39,10 +38,12 @@ char prodstr[32] = "monome";
 bool isInited = false;
 elapsedMillis monomeRefresh;
 
-int prevLedBuffer[512]; 
 
 // Monome class setup
 MonomeSerialDevice mdp;
+
+int prevLedBuffer[mdp.MAXLEDCOUNT]; 
+
 
 // NeoTrellis setup
 Adafruit_NeoTrellis trellis_array[NUM_ROWS / 4][NUM_COLS / 4] = {
@@ -95,12 +96,10 @@ TrellisCallback keyCallback(keyEvent evt){
     //on
     //Serial.println(" pressed ");
     mdp.sendGridKey(x, y, 1);
-    //mdp.refreshGrid();
   }else if(evt.bit.EDGE == SEESAW_KEYPAD_EDGE_FALLING){
     //off 
     //Serial.println(" released ");
     mdp.sendGridKey(x, y, 0);
-    //mdp.refreshGrid();
   }
   //sendLeds();
   //trellis.show();
@@ -125,10 +124,8 @@ void setup(){
   mdp.isMonome = true;
   mdp.deviceID = deviceID;
   mdp.setupAsGrid(NUM_ROWS, NUM_COLS);
-// mdp.setAllLEDs(0);
 
 //  delay(200);
-//  mdp.getDeviceInfo();
 
   trellis.begin();
   
@@ -176,8 +173,8 @@ void sendLeds(){
   uint8_t value, prevValue = 0;
   uint32_t hexColor;
   bool isDirty = false;
-  
-  for(int i=0; i< NUM_ROWS * NUM_COLS; i++){
+
+  for(int i=0; i< NUM_ROWS * NUM_COLS; i++){ 
     value = mdp.leds[i];
     prevValue = prevLedBuffer[i];
     if (value != prevValue) {
@@ -188,10 +185,10 @@ void sendLeds(){
       isDirty = true;
     }
   }
+ 
   if (isDirty) {
     trellis.show();
   }
-
 }
 
 
