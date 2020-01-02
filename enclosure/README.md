@@ -4,7 +4,7 @@ This is a "stack" of laser cut 3mm acrylic and one layer of 5mm EVA foam. I'm us
 
 I'm using the the Adafruit [JST-PH 4 pin cable](https://www.adafruit.com/product/3568) cut in half and then soldering the bare wire ends to the Teensy. 
 
-Pins used on the Teensy are VIN, GND, SCL (pin 19), SDA (pin 18).
+Pins used on the Teensy are VIN (5v from USB), GND, SCL (pin 19), SDA (pin 18).
 
 Put a piece of electrical tape over the back of the teensy to avoid potential shorts when you stack it up (its a bit of a tight squeeze). Make sure to get the wires as flat as possible under the teensy.
 
