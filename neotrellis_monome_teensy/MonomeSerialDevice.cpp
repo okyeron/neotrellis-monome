@@ -212,14 +212,8 @@ void MonomeSerialDevice::refresh() {
 */
 }
 
-
-
 void MonomeSerialDevice::processSerial() {
-    //Serial.println("processSerial");
-    
-    
     uint8_t identifierSent;  // command byte sent from controller to matrix
-//  uint8_t devSect, devNum, gridNum, 
     uint8_t index, readX, readY, readN, readA;
     uint8_t dummy, gridNum, deviceAddress;  // for reading in data not used by the matrix
     uint8_t n, x, y, z, i;
@@ -228,7 +222,7 @@ void MonomeSerialDevice::processSerial() {
     uint8_t gridKeyY;
     int8_t delta;
     uint8_t gridX    = columns;          // Will be either 8 or 16
-    uint8_t gridY    = rows;           // standard for 128
+    uint8_t gridY    = rows;
     uint8_t numQuads = columns/rows;
     
     // get command identifier: first byte of packet is identifier in the form: [(a << 4) + b]
@@ -236,7 +230,7 @@ void MonomeSerialDevice::processSerial() {
     // b = command (ie. query, enable, led, key, frame)
 
     identifierSent = Serial.read();  
-
+    
     switch (identifierSent) {
         case 0x00:  // device information
         	// [null, "led-grid", "key-grid", "digital-out", "digital-in", "encoder", "analog-in", "analog-out", "tilt", "led-ring"]
@@ -277,7 +271,7 @@ void MonomeSerialDevice::processSerial() {
             //Serial.println("0x04");
             gridNum = Serial.read();        // grid number
             readX = Serial.read();          // x offset
-            readY = Serial.read();          // y offset
+            readY = Serial.read();          // y offset 
             break;
 
         case 0x05:
@@ -334,6 +328,12 @@ void MonomeSerialDevice::processSerial() {
         case 0x14:                  // /prefix/led/map x y d[8]  / map (frame)
           readX = Serial.read();
           readY = Serial.read();
+
+          while (readX > 16) { readX += 16; }         // hacky shit to deal with negative numbers from rotation
+          readX &= 0xF8;                              // floor the offset to 0 or 8
+          readY = Serial.read();                      // y offset
+          while (readY > 16) { readY += 16; }         // hacky shit to deal with negative numbers from rotation
+          readY &= 0xF8;                              // floor the offset to 0 or 8
 
           for (y = 0; y < 8; y++) {               // each i will be a row
             intensity = Serial.read();            // read one byte of 8 bits on/off
@@ -399,9 +399,13 @@ void MonomeSerialDevice::processSerial() {
           break;
 
         case 0x1A:                               //   /prefix/led/level/map x y d[64]
-                                                 // set 8x8 block
+                                                 // set 8x8 block          
           readX = Serial.read();                      // x offset
+          while (readX > 16) { readX += 16; }         // hacky shit to deal with negative numbers from rotation
+          readX &= 0xF8;                              // floor the offset to 0 or 8
           readY = Serial.read();                      // y offset
+          while (readY > 16) { readY += 16; }         // hacky shit to deal with negative numbers from rotation
+          readY &= 0xF8;                              // floor the offset to 0 or 8
           
           z = 0;
           for (y = 0; y < 8; y++) {
@@ -413,7 +417,7 @@ void MonomeSerialDevice::processSerial() {
                 } else {
                   setGridLed(readX + x, readY + y, 0);
                 }
-              } else {                        
+              } else { 
                 if ((intensity & 0x0F) > variMonoThresh ) {      // odd bytes, use lower nybble
                   setGridLed(readX + x, readY + y, intensity & 0x0F);
                 } else {
@@ -423,14 +427,12 @@ void MonomeSerialDevice::processSerial() {
               z++;
             }
           }
-            
          /*
           } else {
             for (int q = 0; q<32; q++){
               Serial.read();
             }
           }*/
-          
           break;
 
         case 0x1B:                                // /prefix/led/level/row x y d[8]
