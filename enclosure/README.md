@@ -12,6 +12,7 @@ As an experiment, I added some little holes to the enclosure and you can put a c
 
 Putting the Teensy in the case, you want to be sure it's as flat as possible (see pix).
 
+
 ![<#alt_text#>](<IMG_2880.JPG>)
 ![<#alt_text#>](<IMG_2879.JPG>)
 ![<#alt_text#>](<IMG_2871.JPG>)
@@ -22,3 +23,4 @@ Putting the Teensy in the case, you want to be sure it's as flat as possible (se
 ![<#alt_text#>](<IMG_2876.JPG>)
 ![<#alt_text#>](<IMG_2877.JPG>)
 ![<#alt_text#>](<IMG_2878.JPG>)
+
