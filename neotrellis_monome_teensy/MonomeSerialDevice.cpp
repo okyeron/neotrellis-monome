@@ -338,8 +338,8 @@ void MonomeSerialDevice::processSerial() {
             intensity = Serial.read();            // read one byte of 8 bits on/off
     
             for (x = 0; x < 8; x++) {             // for 8 LEDs on a row
-              if ((intensity >> x) & 0x01) {      // set LED if the intensity bit is set
-                setGridLed(readX + x, readY + y, intensity); 
+              if ((intensity >> x) & 0x01) {      // if intensity bit set, light led full brightness
+                setGridLed(readX + x, readY + y, 15); 
               }
               else {
                 setGridLed(readX + x, readY + y, 0); 
@@ -357,8 +357,8 @@ void MonomeSerialDevice::processSerial() {
           intensity = Serial.read();                  // read one byte of 8 bits on/off
 
           for (x = 0; x < 8; x++) {               // for the next 8 lights in row
-            if ((intensity >> x) & 0x01) {        // if intensity bit set, light led
-              setGridLed(readX + x, readY, intensity);
+            if ((intensity >> x) & 0x01) {        // if intensity bit set, light led full brightness
+              setGridLed(readX + x, readY, 15);
             } else {
               setGridLed(readX + x, readY, 0);
             }
@@ -372,11 +372,12 @@ void MonomeSerialDevice::processSerial() {
           readY = Serial.read();
           while (readY > 16) { readY += 16; }         // hacky shit to deal with negative numbers from rotation
           readY &= 0xF8;                              // floor the offset to 0 or 8
+
           intensity = Serial.read();                  // read one byte of 8 bits on/off
 
-          for (y = 0; y < 8; y++) {           // for the next 8 lights in column
-            if ((intensity >> y) & 0x01) {        // if intensity bit set, light led
-              setGridLed(readX, readY + y, intensity);
+          for (y = 0; y < 8; y++) {               // for the next 8 lights in column
+            if ((intensity >> y) & 0x01) {        // if intensity bit set, light led full brightness
+              setGridLed(readX, readY + y, 15);
             } else {
               setGridLed(readX, readY + y, 0);
             }
