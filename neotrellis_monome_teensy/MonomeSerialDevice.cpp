@@ -327,10 +327,9 @@ void MonomeSerialDevice::processSerial() {
 
         case 0x14:                  // /prefix/led/map x y d[8]  / map (frame)
           readX = Serial.read();
-          readY = Serial.read();
-
           while (readX > 16) { readX += 16; }         // hacky shit to deal with negative numbers from rotation
           readX &= 0xF8;                              // floor the offset to 0 or 8
+
           readY = Serial.read();                      // y offset
           while (readY > 16) { readY += 16; }         // hacky shit to deal with negative numbers from rotation
           readY &= 0xF8;                              // floor the offset to 0 or 8
@@ -351,6 +350,9 @@ void MonomeSerialDevice::processSerial() {
 
         case 0x15:                                //  /prefix/led/row x y d
           readX = Serial.read();                      // led-grid / set row
+          while (readX > 16) { readX += 16; }         // hacky shit to deal with negative numbers from rotation
+          readX &= 0xF8;                              // floor the offset to 0 or 8
+
           readY = Serial.read();                      // 
           intensity = Serial.read();                  // read one byte of 8 bits on/off
 
@@ -366,7 +368,10 @@ void MonomeSerialDevice::processSerial() {
 
         case 0x16:                                //  /prefix/led/col x y d
           readX = Serial.read();                      // led-grid / column set
+
           readY = Serial.read();
+          while (readY > 16) { readY += 16; }         // hacky shit to deal with negative numbers from rotation
+          readY &= 0xF8;                              // floor the offset to 0 or 8
           intensity = Serial.read();                  // read one byte of 8 bits on/off
 
           for (y = 0; y < 8; y++) {           // for the next 8 lights in column

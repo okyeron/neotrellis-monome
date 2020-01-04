@@ -24,7 +24,7 @@
 #define BRIGHTNESS 35 // overall grid brightnes - 35 seems to be OK for all leds at full brightness
 #define R 255
 #define G 255
-#define B 200
+#define B 255
 //  amber? {255,191,0}
 //  warmer white? {255,255,200}
 
@@ -158,11 +158,16 @@ void setup(){
       trellis.registerCallback(x, y, keyCallback);
 		}
 	}
-  delay(500);
+  delay(400);
   mdp.setAllLEDs(0);
   sendLeds();
   monomeRefresh = 0;
   isInited = true;
+  trellis.setPixelColor(0, 0xFFFFFF);
+  trellis.show();
+  delay(100);
+  trellis.setPixelColor(0, 0x000000);
+  trellis.show();
 }
 
 // ***************************************************************************
