@@ -43,34 +43,30 @@ void MonomeSerialDevice::getDeviceInfo() {
  }
 
 void MonomeSerialDevice::poll() {
-    while (isMonome && Serial.available()) { processSerial(); };
-    //while (Serial.available()) processSerial();
+    //while (isMonome && Serial.available()) { processSerial(); };
+    if (Serial.available()) {
+      processSerial();
+    }
     //Serial.println("processSerial");
 }
 
 
 void MonomeSerialDevice::setAllLEDs(int value) {
   for (int i = 0; i < MAXLEDCOUNT; i++) leds[i] = value;
-/*  uint8_t i, j;
-  for (i = 0; i < gridX; i++) {
-    for (j = 0; j < gridY; j++) {
-        setGridLed(i, j, value);
-    }
-  }
-*/
 }
 
 void MonomeSerialDevice::setGridLed(uint8_t x, uint8_t y, uint8_t level) {
-    if (x >= columns || y >= rows) {
-      return;
-    }
-    int index;
+    int index = x + (y * columns);
+/*    
     if (columns > 8){
       index = x + (y << 4);
-    }else{
+    }else {
       index = x + (y << 3);
     }
+*/    
     if (index < MAXLEDCOUNT) leds[index] = level;
+
+    //debugfln(INFO, "LED index: %d x %d y %d", index, x, y);
 }
         
 void MonomeSerialDevice::clearGridLed(uint8_t x, uint8_t y) {
@@ -110,6 +106,7 @@ void MonomeSerialDevice::refreshArc() {
 }
 
 void MonomeSerialDevice::refresh() {
+/*
     uint8_t buf[35];
     int ind, led;
 
@@ -212,17 +209,11 @@ void MonomeSerialDevice::refresh() {
 
         arcDirty = 0;
     }
+*/
 }
 
-
-
 void MonomeSerialDevice::processSerial() {
-    //Serial.println("processSerial");
-    
-    uint8_t numGrids = 1;
-    
     uint8_t identifierSent;  // command byte sent from controller to matrix
-//  uint8_t devSect, devNum, gridNum, 
     uint8_t index, readX, readY, readN, readA;
     uint8_t dummy, gridNum, deviceAddress;  // for reading in data not used by the matrix
     uint8_t n, x, y, z, i;
@@ -231,31 +222,31 @@ void MonomeSerialDevice::processSerial() {
     uint8_t gridKeyY;
     int8_t delta;
     uint8_t gridX    = columns;          // Will be either 8 or 16
-    uint8_t gridY    = rows;           // standard for 128
+    uint8_t gridY    = rows;
+    uint8_t numQuads = columns/rows;
     
     // get command identifier: first byte of packet is identifier in the form: [(a << 4) + b]
     // a = section (ie. system, key-grid, digital, encoder, led grid, tilt)
     // b = command (ie. query, enable, led, key, frame)
 
     identifierSent = Serial.read();  
-
+    
     switch (identifierSent) {
         case 0x00:  // device information
         	// [null, "led-grid", "key-grid", "digital-out", "digital-in", "encoder", "analog-in", "analog-out", "tilt", "led-ring"]
             //Serial.println("0x00 system / query ----------------------");
             Serial.write((uint8_t)0x00); // action: response, 0x00 = system
-            Serial.write((uint8_t)0x02); // section id, 2 = key-grid, 5 = encoder/arc	## NEED devSect variable
-            Serial.write((uint8_t)numGrids);   // one grid is 64 buttons - 			## NEED numgrids variable
+            Serial.write((uint8_t)0x01); // section id, 1 = led-grid, 2 = key-grid, 5 = encoder/arc	## NEED devSect variable
+            Serial.write((uint8_t)numQuads);   // one Quad is 64 buttons
 
             break;
 
         case 0x01:  // system / ID
-            Serial.write((uint8_t)0x01);                 // action: response, 0x01
-            for (i = 0; i < 32; i++) {        // has to be 32
+            Serial.write((uint8_t)0x01);        // action: response, 0x01
+            for (i = 0; i < 32; i++) {          // has to be 32
                 if (i < deviceID.length()) {
                   Serial.write(deviceID[i]);
-                } 
-                else {
+                } else {
                   Serial.write(0x00);
                 }
             }
@@ -280,7 +271,7 @@ void MonomeSerialDevice::processSerial() {
             //Serial.println("0x04");
             gridNum = Serial.read();        // grid number
             readX = Serial.read();          // x offset
-            readY = Serial.read();          // y offset
+            readY = Serial.read();          // y offset 
             break;
 
         case 0x05:
@@ -328,27 +319,30 @@ void MonomeSerialDevice::processSerial() {
 
         case 0x12:            //  /prefix/led/all [0/1]  / all off
           clearAllLeds();
-          //sendBufferedLeds();  // send commands
           break;
 
         case 0x13:                      //  /prefix/led/all [0/1] / all on
           setAllLEDs(15);
-          //sendBufferedLeds();  // send commands
           break;
 
         case 0x14:                  // /prefix/led/map x y d[8]  / map (frame)
           readX = Serial.read();
-          readY = Serial.read();
+          while (readX > 16) { readX += 16; }         // hacky shit to deal with negative numbers from rotation
+          readX &= 0xF8;                              // floor the offset to 0 or 8
 
-          for (y = 0; y < 8; y++) {           // each i will be a row
+          readY = Serial.read();                      // y offset
+          while (readY > 16) { readY += 16; }         // hacky shit to deal with negative numbers from rotation
+          readY &= 0xF8;                              // floor the offset to 0 or 8
+
+          for (y = 0; y < 8; y++) {               // each i will be a row
             intensity = Serial.read();            // read one byte of 8 bits on/off
     
-            for (x = 0; x < 8; x++) {          // for 8 LEDs on a row
-              if ((intensity >> x) & 0x01) {      // set LED if the intensity bit is set
-                setGridLed(readX + x, y, intensity); 
+            for (x = 0; x < 8; x++) {             // for 8 LEDs on a row
+              if ((intensity >> x) & 0x01) {      // if intensity bit set, light led full brightness
+                setGridLed(readX + x, readY + y, 15); 
               }
               else {
-                setGridLed(readX + x, y, 0); 
+                setGridLed(readX + x, readY + y, 0); 
               }
             }
           }
@@ -356,12 +350,15 @@ void MonomeSerialDevice::processSerial() {
 
         case 0x15:                                //  /prefix/led/row x y d
           readX = Serial.read();                      // led-grid / set row
+          while (readX > 16) { readX += 16; }         // hacky shit to deal with negative numbers from rotation
+          readX &= 0xF8;                              // floor the offset to 0 or 8
+
           readY = Serial.read();                      // 
           intensity = Serial.read();                  // read one byte of 8 bits on/off
 
           for (x = 0; x < 8; x++) {               // for the next 8 lights in row
-            if ((intensity >> x) & 0x01) {        // if intensity bit set, light led
-              setGridLed(readX + x, readY, intensity);
+            if ((intensity >> x) & 0x01) {        // if intensity bit set, light led full brightness
+              setGridLed(readX + x, readY, 15);
             } else {
               setGridLed(readX + x, readY, 0);
             }
@@ -371,12 +368,16 @@ void MonomeSerialDevice::processSerial() {
 
         case 0x16:                                //  /prefix/led/col x y d
           readX = Serial.read();                      // led-grid / column set
+
           readY = Serial.read();
+          while (readY > 16) { readY += 16; }         // hacky shit to deal with negative numbers from rotation
+          readY &= 0xF8;                              // floor the offset to 0 or 8
+
           intensity = Serial.read();                  // read one byte of 8 bits on/off
 
-          for (y = 0; y < 8; y++) {           // for the next 8 lights in column
-            if ((intensity >> y) & 0x01) {        // if intensity bit set, light led
-              setGridLed(readX, readY + y, intensity);
+          for (y = 0; y < 8; y++) {               // for the next 8 lights in column
+            if ((intensity >> y) & 0x01) {        // if intensity bit set, light led full brightness
+              setGridLed(readX, readY + y, 15);
             } else {
               setGridLed(readX, readY + y, 0);
             }
@@ -404,48 +405,45 @@ void MonomeSerialDevice::processSerial() {
           break;
 
         case 0x1A:                               //   /prefix/led/level/map x y d[64]
-                                                 // set 8x8 block
-         readX = Serial.read();                      // x offset
-         readY = Serial.read();                      // y offset
-  
+                                                 // set 8x8 block          
+          readX = Serial.read();                      // x offset
+          while (readX > 16) { readX += 16; }         // hacky shit to deal with negative numbers from rotation
+          readX &= 0xF8;                              // floor the offset to 0 or 8
+          readY = Serial.read();                      // y offset
+          while (readY > 16) { readY += 16; }         // hacky shit to deal with negative numbers from rotation
+          readY &= 0xF8;                              // floor the offset to 0 or 8
+          
           z = 0;
           for (y = 0; y < 8; y++) {
             for (x = 0; x < 8; x++) {
               if (z % 2 == 0) {                    
                 intensity = Serial.read();
                 if ( ((intensity >> 4) & 0x0F) > variMonoThresh) {  // even bytes, use upper nybble
-                  //writeBufferedLed(readX + x, readY + y, (intensity >> 4) & 0x0F);
                   setGridLed(readX + x, readY + y, (intensity >> 4) & 0x0F);
                 } else {
-                  //writeBufferedLed(readX + x, readY + y, 0);
                   setGridLed(readX + x, readY + y, 0);
                 }
-              } else {                        
+              } else { 
                 if ((intensity & 0x0F) > variMonoThresh ) {      // odd bytes, use lower nybble
-                  //writeBufferedLed(readX + x, readY + y, intensity & 0x0F);
                   setGridLed(readX + x, readY + y, intensity & 0x0F);
                 } else {
-                  //writeBufferedLed(readX + x, readY + y, 0);
                   setGridLed(readX + x, readY + y, 0);
                 }
               }
               z++;
             }
           }
-          // NEED SEND
-            
          /*
           } else {
             for (int q = 0; q<32; q++){
               Serial.read();
             }
           }*/
-          
           break;
 
         case 0x1B:                                // /prefix/led/level/row x y d[8]
           readX = Serial.read();                      // set 8x1 block of led levels, with offset
-          readY = Serial.read();                      // y = y offset
+          readY = Serial.read();                      //  x = x offset, y = y offset
           for (x = 0; x < 8; x++) {
               if (x % 2 == 0) {                    
                 intensity = Serial.read();
@@ -469,23 +467,22 @@ void MonomeSerialDevice::processSerial() {
 
         case 0x1C:                                // /prefix/led/level/col x y d[8]
           readX = Serial.read();                      // set 1x8 block of led levels, with offset
-          readY = Serial.read();                      // x = x offset
-          for (y = 0; y < gridY; y++) {
+          readY = Serial.read();                      // x = x offset, y = y offset
+          for (y = 0; y < 8; y++) {
               if (y % 2 == 0) {                    
                 intensity = Serial.read();
-              
                 if ( (intensity >> 4 & 0x0F) > variMonoThresh) {  // even bytes, use upper nybble
-                  setGridLed(readX, y, intensity);
+                  setGridLed(readX, readY + y, intensity);
                 }
                 else {
-                  setGridLed(readX, y, 0);
+                  setGridLed(readX, readY + y, 0);
                 }
               } else {                              
                 if ((intensity & 0x0F) > variMonoThresh ) {      // odd bytes, use lower nybble
-                  setGridLed(readX, y, intensity);
+                  setGridLed(readX, readY + y, intensity);
                 }
                 else {
-                  setGridLed(readX, y, 0);
+                  setGridLed(readX, readY + y, 0);
                 }
               }
           }
@@ -532,14 +529,6 @@ void MonomeSerialDevice::processSerial() {
             Serial.print(gridKeyY);
             Serial.print(" dn - ");
             */
-            break;
-
-    // 0x3x are digital out
-    // 0x4x are digital line in
-
-        case 0x40:  //   d-line-in / change to low
-            break;
-        case 0x41:  //   d-line-in / change to high
             break;
 
         // 0x5x are encoder
@@ -594,10 +583,6 @@ void MonomeSerialDevice::processSerial() {
             // description: encoder switch down
             break;
 
-        case 0x60:  //   analog / active response - 33 bytes [0x01, d0..31]
-            break;
-        case 0x61:  //   analog in - 4 bytes [0x61, n, dh, dl]
-            break;
         case 0x80:  //   tilt / active response - 9 bytes [0x01, d]
             break;
         case 0x81:  //   tilt - 8 bytes [0x80, n, xh, xl, yh, yl, zh, zl]
@@ -703,7 +688,8 @@ void MonomeSerialDevice::processSerial() {
           // always positive direction sweep. ie. 4,10 = 4,5,6,7,8,9,10 whereas 10,4 = 10,11,12,13...63,0,1,2,3,4 
          break;
 
-        default: break;
+        default: 
+          break;
     }
 }
 

@@ -21,10 +21,13 @@
 #define INT_PIN 9
 #define LED_PIN 13 // teensy LED 
 
-#define BRIGHTNESS 35 // overall grid brightnes - 35 seems to be OK for all leds at full brightness
+// This assumes you are using a USB breakout board to route power to the board 
+// If you are plugging directly into the teensy, you will need to adjust this brightness to a much lower value
+#define BRIGHTNESS 255 // overall grid brightness - use gamma table below to adjust levels
+
 #define R 255
-#define G 255
-#define B 255
+#define G 127
+#define B 0
 //  amber? {255,191,0}
 //  warmer white? {255,255,200}
 
@@ -51,6 +54,9 @@ Adafruit_NeoTrellis trellis_array[NUM_ROWS / 4][NUM_COLS / 4] = {
   { Adafruit_NeoTrellis(0x35), Adafruit_NeoTrellis(0x39), Adafruit_NeoTrellis(0x3F), Adafruit_NeoTrellis(0x37) } // bottom row
 };
 Adafruit_MultiTrellis trellis((Adafruit_NeoTrellis *)trellis_array, NUM_ROWS / 4, NUM_COLS / 4);
+
+// gamma table for 16 levels of brightness
+const uint8_t gammaTable[16] = { 0,  2,  3,  6,  11, 18, 25, 32, 41, 59, 70, 80, 92, 103, 115, 128}; 
 
 
 
@@ -158,11 +164,12 @@ void setup(){
       trellis.registerCallback(x, y, keyCallback);
 		}
 	}
-  delay(400);
+  delay(300);
   mdp.setAllLEDs(0);
   sendLeds();
   monomeRefresh = 0;
   isInited = true;
+  // blink one led to show it's started up  
   trellis.setPixelColor(0, 0xFFFFFF);
   trellis.show();
   delay(100);
@@ -182,8 +189,11 @@ void sendLeds(){
   for(int i=0; i< NUM_ROWS * NUM_COLS; i++){ 
     value = mdp.leds[i];
     prevValue = prevLedBuffer[i];
+    uint8_t gvalue = gammaTable[value];
+
     if (value != prevValue) {
-      hexColor = (((R * value) >> 4) << 16) + (((G * value) >> 4) << 8) + ((B * value) >> 4);
+      //hexColor = (((R * value) >> 4) << 16) + (((G * value) >> 4) << 8) + ((B * value) >> 4);
+      hexColor =  (((gvalue*R)/256) << 16) + (((gvalue*G)/256) << 8) + (((gvalue*B)/256) << 0);
       trellis.setPixelColor(i, hexColor);
 
       prevLedBuffer[i] = value;
