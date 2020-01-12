@@ -26,8 +26,8 @@
 #define BRIGHTNESS 255 // overall grid brightness - use gamma table below to adjust levels
 
 #define R 255
-#define G 127
-#define B 0
+#define G 255
+#define B 255
 //  amber? {255,191,0}
 //  warmer white? {255,255,200}
 
