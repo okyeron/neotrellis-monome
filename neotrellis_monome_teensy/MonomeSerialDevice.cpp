@@ -442,21 +442,24 @@ void MonomeSerialDevice::processSerial() {
           break;
 
         case 0x1B:                                // /prefix/led/level/row x y d[8]
-          readX = Serial.read();                      // set 8x1 block of led levels, with offset
-          readY = Serial.read();                      //  x = x offset, y = y offset
+          readX = Serial.read();                      // x offset
+          while (readX > 16) { readX += 16; }         // hacky shit to deal with negative numbers from rotation
+          readX &= 0xF8;                              // floor the offset to 0 or 8
+          readY = Serial.read();                      // y offset
+          while (readY > 16) { readY += 16; }         // hacky shit to deal with negative numbers from rotation
+          readY &= 0xF8;                              // floor the offset to 0 or 8
           for (x = 0; x < 8; x++) {
               if (x % 2 == 0) {                    
                 intensity = Serial.read();
-            
                 if ( (intensity >> 4 & 0x0F) > variMonoThresh) {  // even bytes, use upper nybble
-                  setGridLed(readX + x, readY, intensity);
+                  setGridLed(readX + x, readY, (intensity >> 4) & 0x0F);
                 }
                 else {
                   setGridLed(readX + x, readY, 0);
                 }
               } else {                              
                 if ((intensity & 0x0F) > variMonoThresh ) {      // odd bytes, use lower nybble
-                  setGridLed(readX + x, readY, intensity);
+                  setGridLed(readX + x, readY, intensity & 0x0F);
                 }
                 else {
                   setGridLed(readX + x, readY, 0);
@@ -466,20 +469,24 @@ void MonomeSerialDevice::processSerial() {
           break;
 
         case 0x1C:                                // /prefix/led/level/col x y d[8]
-          readX = Serial.read();                      // set 1x8 block of led levels, with offset
-          readY = Serial.read();                      // x = x offset, y = y offset
+          readX = Serial.read();                      // x offset
+          while (readX > 16) { readX += 16; }         // hacky shit to deal with negative numbers from rotation
+          readX &= 0xF8;                              // floor the offset to 0 or 8
+          readY = Serial.read();                      // y offset
+          while (readY > 16) { readY += 16; }         // hacky shit to deal with negative numbers from rotation
+          readY &= 0xF8;                              // floor the offset to 0 or 8
           for (y = 0; y < 8; y++) {
               if (y % 2 == 0) {                    
                 intensity = Serial.read();
                 if ( (intensity >> 4 & 0x0F) > variMonoThresh) {  // even bytes, use upper nybble
-                  setGridLed(readX, readY + y, intensity);
+                  setGridLed(readX, readY + y, (intensity >> 4) & 0x0F);
                 }
                 else {
                   setGridLed(readX, readY + y, 0);
                 }
               } else {                              
                 if ((intensity & 0x0F) > variMonoThresh ) {      // odd bytes, use lower nybble
-                  setGridLed(readX, readY + y, intensity);
+                  setGridLed(readX, readY + y, intensity & 0x0F);
                 }
                 else {
                   setGridLed(readX, readY + y, 0);

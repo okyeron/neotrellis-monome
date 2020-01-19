@@ -56,7 +56,7 @@ Adafruit_NeoTrellis trellis_array[NUM_ROWS / 4][NUM_COLS / 4] = {
 Adafruit_MultiTrellis trellis((Adafruit_NeoTrellis *)trellis_array, NUM_ROWS / 4, NUM_COLS / 4);
 
 // gamma table for 16 levels of brightness
-const uint8_t gammaTable[16] = { 0,  2,  3,  6,  11, 18, 25, 32, 41, 59, 70, 80, 92, 103, 115, 128}; 
+const uint8_t gammaTable[16] = { 2,  3,  4,  6,  11, 18, 25, 32, 41, 59, 70, 80, 92, 103, 115, 128}; 
 
 
 
