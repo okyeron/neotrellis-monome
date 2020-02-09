@@ -8,7 +8,7 @@ A2 sets the bit with a value of 4
 A3 sets the bit with a value of 8
 A4 sets the bit with a value of 16
 The final address is 0x2E + (1*A0) + (2*A1) + (4*A2) + (8*A3) + (16*A4)
-So for example if A2 is shorted and A0 is shorted, the address is 0x2F + 4 + 1 = 0x34
+So for example if A2 is shorted and A0 is shorted, the address is 0x2E + 4 + 1 = 0x33
 
 
 -				0x2E
