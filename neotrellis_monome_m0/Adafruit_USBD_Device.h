@@ -39,8 +39,8 @@ class Adafruit_USBD_Device
     tusb_desc_device_t _desc_device;
 
     uint8_t  *_desc_cfg;
-    uint16_t _desc_cfg_size;
-    uint16_t _desc_cfglen;
+    uint16_t _desc_cfg_maxlen;
+    uint16_t _desc_cfg_len;
     uint8_t  _desc_cfg_buffer[256];
 
     uint8_t  _itf_count;
@@ -70,8 +70,8 @@ class Adafruit_USBD_Device
     uint16_t    getLanguageDescriptor     (void) { return _language_id; }
     const char *getManufacturerDescriptor (void) { return _manufacturer; }
     const char *getProductDescriptor      (void) { return _product; }
-    const char *getSerialDescriptor      (void) { return _serial; }
-
+	const char *getCustomSerialDescriptor      (void) { return _serial; }
+	
     bool begin(void);
 
     bool mounted      (void) { return tud_mounted(); }
@@ -81,6 +81,11 @@ class Adafruit_USBD_Device
 
     friend uint8_t const * tud_descriptor_device_cb(void);
     friend uint8_t const * tud_descriptor_configuration_cb(uint8_t index);
+
+    //------------- Platform Dependent APIs -------------//
+    uint8_t getSerialDescriptor(uint16_t* serial_str);
+    void detach(void); // physical detach by disable pull-up
+    void attach(void); // physical attach by enable pull-up
 };
 
 extern Adafruit_USBD_Device USBDevice;

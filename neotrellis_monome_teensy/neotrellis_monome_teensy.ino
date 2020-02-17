@@ -15,7 +15,7 @@
 //#include <elapsedMillis.h>
 
 
-#define NUM_ROWS 8 // DIM_Y number of rows of keys down
+#define NUM_ROWS 16 // DIM_Y number of rows of keys down
 #define NUM_COLS 16 // DIM_X number of columns of keys across
 
 #define INT_PIN 9
@@ -47,12 +47,30 @@ MonomeSerialDevice mdp;
 
 int prevLedBuffer[mdp.MAXLEDCOUNT]; 
 
-
 // NeoTrellis setup
+/*
+// 8x8 example
+Adafruit_NeoTrellis trellis_array[NUM_ROWS / 4][NUM_COLS / 4] = {
+  { Adafruit_NeoTrellis(0x2F), Adafruit_NeoTrellis(0x2E)}, // top row
+  { Adafruit_NeoTrellis(0x3F), Adafruit_NeoTrellis(0x37)}, // bottom row
+};
+
+
+// 16x8 example
 Adafruit_NeoTrellis trellis_array[NUM_ROWS / 4][NUM_COLS / 4] = {
   { Adafruit_NeoTrellis(0x33), Adafruit_NeoTrellis(0x31), Adafruit_NeoTrellis(0x2F), Adafruit_NeoTrellis(0x2E)}, // top row
-  { Adafruit_NeoTrellis(0x35), Adafruit_NeoTrellis(0x39), Adafruit_NeoTrellis(0x3F), Adafruit_NeoTrellis(0x37) } // bottom row
+  { Adafruit_NeoTrellis(0x35), Adafruit_NeoTrellis(0x39), Adafruit_NeoTrellis(0x3F), Adafruit_NeoTrellis(0x37)} // bottom row
 };
+*/
+
+// 16x16 example
+Adafruit_NeoTrellis trellis_array[NUM_ROWS / 4][NUM_COLS / 4] = {
+  { Adafruit_NeoTrellis(0x33), Adafruit_NeoTrellis(0x31), Adafruit_NeoTrellis(0x2F), Adafruit_NeoTrellis(0x2E)}, // top row
+  { Adafruit_NeoTrellis(0x35), Adafruit_NeoTrellis(0x39), Adafruit_NeoTrellis(0x3F), Adafruit_NeoTrellis(0x37)}, // bottom row
+  { Adafruit_NeoTrellis(0x43), Adafruit_NeoTrellis(0x41), Adafruit_NeoTrellis(0x36), Adafruit_NeoTrellis(0x3E)}, 
+  { Adafruit_NeoTrellis(0x45), Adafruit_NeoTrellis(0x49), Adafruit_NeoTrellis(0x4d), Adafruit_NeoTrellis(0x47)} 
+};
+
 Adafruit_MultiTrellis trellis((Adafruit_NeoTrellis *)trellis_array, NUM_ROWS / 4, NUM_COLS / 4);
 
 // gamma table for 16 levels of brightness

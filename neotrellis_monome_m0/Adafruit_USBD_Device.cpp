@@ -46,8 +46,6 @@
   #define USB_CONFIG_POWER 100
 #endif
 
-extern uint8_t load_serial_number(uint16_t* serial_str);
-
 Adafruit_USBD_Device USBDevice;
 
 Adafruit_USBD_Device::Adafruit_USBD_Device(void)
@@ -92,16 +90,17 @@ Adafruit_USBD_Device::Adafruit_USBD_Device(void)
   };
 
   memcpy(_desc_cfg_buffer, &dev_cfg, sizeof(tusb_desc_configuration_t));
-  _desc_cfg = _desc_cfg_buffer;
-  _desc_cfg_size = sizeof(_desc_cfg_buffer);
-  _desc_cfglen = sizeof(tusb_desc_configuration_t);
-  _itf_count = 0;
-  _epin_count = _epout_count = 1;
+  _desc_cfg        = _desc_cfg_buffer;
+  _desc_cfg_maxlen = sizeof(_desc_cfg_buffer);
+  _desc_cfg_len    = sizeof(tusb_desc_configuration_t);
 
-  _language_id = USB_LANGUAGE;
+  _itf_count    = 0;
+  _epin_count   = _epout_count = 1;
+
+  _language_id  = USB_LANGUAGE;
   _manufacturer = USB_MANUFACTURER;
-  _product = USB_PRODUCT;
-  _serial = USB_SERIAL;
+  _product      = USB_PRODUCT;
+  _serial       = USB_SERIAL;
 }
 
 // Add interface descriptor
@@ -109,8 +108,8 @@ Adafruit_USBD_Device::Adafruit_USBD_Device(void)
 // - Endpoint number is updated to be unique
 bool Adafruit_USBD_Device::addInterface(Adafruit_USBD_Interface& itf)
 {
-  uint8_t* desc = _desc_cfg+_desc_cfglen;
-  uint16_t const len = itf.getDescriptor(_itf_count, desc, _desc_cfg_size-_desc_cfglen);
+  uint8_t* desc = _desc_cfg+_desc_cfg_len;
+  uint16_t const len = itf.getDescriptor(_itf_count, desc, _desc_cfg_maxlen-_desc_cfg_len);
   uint8_t* desc_end = desc+len;
 
   if ( !len ) return false;
@@ -131,11 +130,11 @@ bool Adafruit_USBD_Device::addInterface(Adafruit_USBD_Interface& itf)
     desc += desc[0]; // next
   }
 
-  _desc_cfglen += len;
+  _desc_cfg_len += len;
 
   // Update configuration descriptor
   tusb_desc_configuration_t* config = (tusb_desc_configuration_t*)_desc_cfg;
-  config->wTotalLength = _desc_cfglen;
+  config->wTotalLength = _desc_cfg_len;
   config->bNumInterfaces = _itf_count;
 
   return true;
@@ -143,17 +142,17 @@ bool Adafruit_USBD_Device::addInterface(Adafruit_USBD_Interface& itf)
 
 void Adafruit_USBD_Device::setDescriptorBuffer(uint8_t* buf, uint32_t buflen)
 {
-  if (buflen < _desc_cfg_size)
+  if (buflen < _desc_cfg_maxlen)
     return;
 
-  memcpy(buf, _desc_cfg, _desc_cfglen);
-  _desc_cfg = buf;
-  _desc_cfg_size = buflen;
+  memcpy(buf, _desc_cfg, _desc_cfg_len);
+  _desc_cfg        = buf;
+  _desc_cfg_maxlen = buflen;
 }
 
 void Adafruit_USBD_Device::setID(uint16_t vid, uint16_t pid)
 {
-  _desc_device.idVendor = vid;
+  _desc_device.idVendor  = vid;
   _desc_device.idProduct = pid;
 }
 
@@ -205,67 +204,67 @@ uint8_t const * tud_descriptor_configuration_cb(uint8_t index)
   return USBDevice._desc_cfg;
 }
 
-
-static int utf8_to_unichar(const char *str8, int *unicharp)
+static int8_t utf8Codepoint(const uint8_t *utf8, uint32_t *codepointp)
 {
-  int unichar;
+  int codepoint;
   int len;
 
-  if (str8[0] < 0x80)
+  if (utf8[0] < 0x80)
     len = 1;
-  else if ((str8[0] & 0xe0) == 0xc0)
+  else if ((utf8[0] & 0xe0) == 0xc0)
     len = 2;
-  else if ((str8[0] & 0xf0) == 0xe0)
+  else if ((utf8[0] & 0xf0) == 0xe0)
     len = 3;
-  else if ((str8[0] & 0xf8) == 0xf0)
+  else if ((utf8[0] & 0xf8) == 0xf0)
     len = 4;
-  else if ((str8[0] & 0xfc) == 0xf8)
+  else if ((utf8[0] & 0xfc) == 0xf8)
     len = 5;
-  else if ((str8[0] & 0xfe) == 0xfc)
+  else if ((utf8[0] & 0xfe) == 0xfc)
     len = 6;
   else
     return -1;
 
   switch (len) {
     case 1:
-      unichar = str8[0];
+      codepoint = utf8[0];
       break;
     case 2:
-      unichar = str8[0] & 0x1f;
+      codepoint = utf8[0] & 0x1f;
       break;
     case 3:
-      unichar = str8[0] & 0x0f;
+      codepoint = utf8[0] & 0x0f;
       break;
     case 4:
-      unichar = str8[0] & 0x07;
+      codepoint = utf8[0] & 0x07;
       break;
     case 5:
-      unichar = str8[0] & 0x03;
+      codepoint = utf8[0] & 0x03;
       break;
     case 6:
-      unichar = str8[0] & 0x01;
+      codepoint = utf8[0] & 0x01;
       break;
   }
 
   for (int i = 1; i < len; i++) {
-          if ((str8[i] & 0xc0) != 0x80)
-                  return -1;
-          unichar <<= 6;
-          unichar |= str8[i] & 0x3f;
+    if ((utf8[i] & 0xc0) != 0x80)
+      return -1;
+
+    codepoint <<= 6;
+    codepoint |= utf8[i] & 0x3f;
   }
 
-  *unicharp = unichar;
+  *codepointp = codepoint;
   return len;
 }
 
-// Simple UCS-2/16-bit coversion, which handles the Basic Multilingual Plane
-static int strcpy_uni16(const char *s, uint16_t *buf, int bufsize) {
+static int strcpy_utf16(const char *s, uint16_t *buf, int bufsize)
+{
   int i = 0;
   int buflen = 0;
 
-  while (i < bufsize) {
-    int unichar;
-    int utf8len = utf8_to_unichar(s + i, &unichar);
+  while (s[i] != 0) {
+    uint32_t codepoint;
+    uint8_t utf8len = utf8Codepoint((const uint8_t *)s + i, &codepoint);
 
     if (utf8len < 0) {
       // Invalid utf8 sequence, skip it
@@ -275,12 +274,23 @@ static int strcpy_uni16(const char *s, uint16_t *buf, int bufsize) {
 
     i += utf8len;
 
-    // If the codepoint is larger than 16 bit, skip it
-    if (unichar <= 0xffff)
-      buf[buflen++] = unichar;
+    if (codepoint <= 0xffff) {
+      if (buflen == bufsize)
+        break;
+
+      buf[buflen++] = codepoint;
+
+    } else {
+      if (buflen + 1 >= bufsize)
+        break;
+
+      // Surrogate pair
+      codepoint -= 0x10000;
+      buf[buflen++] = (codepoint >> 10) + 0xd800;
+      buf[buflen++] = (codepoint & 0x3ff) + 0xdc00;
+    }
   }
 
-  buf[buflen] = '\0';
   return buflen;
 }
 
@@ -301,17 +311,17 @@ uint16_t const* tud_descriptor_string_cb(uint8_t index)
     break;
 
     case 1:
-      chr_count = strcpy_uni16(USBDevice.getManufacturerDescriptor(), _desc_str + 1, 32);
+      chr_count = strcpy_utf16(USBDevice.getManufacturerDescriptor(), _desc_str + 1, 32);
     break;
 
     case 2:
-      chr_count = strcpy_uni16(USBDevice.getProductDescriptor(), _desc_str + 1, 32);
+      chr_count = strcpy_utf16(USBDevice.getProductDescriptor(), _desc_str + 1, 32);
     break;
 
     case 3:
       // serial Number
-      chr_count = strcpy_uni16(USBDevice.getSerialDescriptor(), _desc_str + 1, 32);
-      //chr_count = load_serial_number(_desc_str+1);
+      //chr_count = USBDevice.getSerialDescriptor(_desc_str+1);
+      chr_count = strcpy_utf16(USBDevice.getCustomSerialDescriptor(), _desc_str + 1, 32);
     break;
 
     default: return NULL;
