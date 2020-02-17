@@ -33,12 +33,12 @@
 
 // set your monome device name here
 String deviceID = "neo-monome";
-String serialNum = "m4676123";
+String serialNum = "m4676124";
 
 // DEVICE INFO FOR ADAFRUIT M0 or M4 
 char mfgstr[32] = "monome";
 char prodstr[32] = "monome";
-char serialstr[32] = "m4676000";
+char serialstr[32] = "m4676124";
 
 elapsedMillis monomeRefresh;
 bool isInited = false;

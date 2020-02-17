@@ -34,6 +34,7 @@ class MonomeEventQueue {
         void addArcEvent(uint8_t index, int8_t delta);
         void sendArcDelta(uint8_t index, int8_t delta);
         void sendArcKey(uint8_t index, uint8_t pressed);
+        void sendTiltEvent(uint8_t n,uint8_t xh,uint8_t xl, uint8_t yh,uint8_t yl, uint8_t zh,uint8_t zl);
 
     protected:
         

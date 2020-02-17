@@ -442,21 +442,24 @@ void MonomeSerialDevice::processSerial() {
           break;
 
         case 0x1B:                                // /prefix/led/level/row x y d[8]
-          readX = Serial.read();                      // set 8x1 block of led levels, with offset
-          readY = Serial.read();                      //  x = x offset, y = y offset
+          readX = Serial.read();                      // x offset
+          while (readX > 16) { readX += 16; }         // hacky shit to deal with negative numbers from rotation
+          readX &= 0xF8;                              // floor the offset to 0 or 8
+          readY = Serial.read();                      // y offset
+          while (readY > 16) { readY += 16; }         // hacky shit to deal with negative numbers from rotation
+          readY &= 0xF8;                              // floor the offset to 0 or 8
           for (x = 0; x < 8; x++) {
               if (x % 2 == 0) {                    
                 intensity = Serial.read();
-            
                 if ( (intensity >> 4 & 0x0F) > variMonoThresh) {  // even bytes, use upper nybble
-                  setGridLed(readX + x, readY, intensity);
+                  setGridLed(readX + x, readY, (intensity >> 4) & 0x0F);
                 }
                 else {
                   setGridLed(readX + x, readY, 0);
                 }
               } else {                              
                 if ((intensity & 0x0F) > variMonoThresh ) {      // odd bytes, use lower nybble
-                  setGridLed(readX + x, readY, intensity);
+                  setGridLed(readX + x, readY, intensity & 0x0F);
                 }
                 else {
                   setGridLed(readX + x, readY, 0);
@@ -466,20 +469,24 @@ void MonomeSerialDevice::processSerial() {
           break;
 
         case 0x1C:                                // /prefix/led/level/col x y d[8]
-          readX = Serial.read();                      // set 1x8 block of led levels, with offset
-          readY = Serial.read();                      // x = x offset, y = y offset
+          readX = Serial.read();                      // x offset
+          while (readX > 16) { readX += 16; }         // hacky shit to deal with negative numbers from rotation
+          readX &= 0xF8;                              // floor the offset to 0 or 8
+          readY = Serial.read();                      // y offset
+          while (readY > 16) { readY += 16; }         // hacky shit to deal with negative numbers from rotation
+          readY &= 0xF8;                              // floor the offset to 0 or 8
           for (y = 0; y < 8; y++) {
               if (y % 2 == 0) {                    
                 intensity = Serial.read();
                 if ( (intensity >> 4 & 0x0F) > variMonoThresh) {  // even bytes, use upper nybble
-                  setGridLed(readX, readY + y, intensity);
+                  setGridLed(readX, readY + y, (intensity >> 4) & 0x0F);
                 }
                 else {
                   setGridLed(readX, readY + y, 0);
                 }
               } else {                              
                 if ((intensity & 0x0F) > variMonoThresh ) {      // odd bytes, use lower nybble
-                  setGridLed(readX, readY + y, intensity);
+                  setGridLed(readX, readY + y, intensity & 0x0F);
                 }
                 else {
                   setGridLed(readX, readY + y, 0);
@@ -583,9 +590,26 @@ void MonomeSerialDevice::processSerial() {
             // description: encoder switch down
             break;
 
-        case 0x80:  //   tilt / active response - 9 bytes [0x01, d]
+        case 0x80:  //   tilt / state request
+                    //  bytes: 2
+                    //  structure: [0x80]
+                    //  description: request active states. device will reply with list.
+
+        
             break;
-        case 0x81:  //   tilt - 8 bytes [0x80, n, xh, xl, yh, yl, zh, zl]
+        case 0x81:  //   tilt / set state on
+                    //  bytes: 2
+                    //  structure: [0x81, n]
+                    //  n = number  0-7
+                    //  description: enable individual tilt sensor.
+
+            break;
+        case 0x82:  //   tilt / set state off
+                    //  bytes: 2
+                    //  structure: [0x82, n]
+                    //  n = number  0-7
+                    //  description: disable individual tilt sensor.
+
             break;
 
         // 0x90 variable 64 LED ring 
@@ -781,4 +805,14 @@ void MonomeEventQueue::sendGridKey(uint8_t x, uint8_t y, uint8_t pressed) {
     Serial.write((uint8_t)buf[0]);
     Serial.write((uint8_t)x);
     Serial.write((uint8_t)y);
+}
+void MonomeEventQueue::sendTiltEvent(uint8_t n,uint8_t xh,uint8_t xl, uint8_t yh,uint8_t yl, uint8_t zh,uint8_t zl) {    
+    Serial.write((uint8_t)0x81);
+    Serial.write((uint8_t)n);
+    Serial.write((uint8_t)xh);
+    Serial.write((uint8_t)xl);
+    Serial.write((uint8_t)yh);
+    Serial.write((uint8_t)yl);
+    Serial.write((uint8_t)zh);
+    Serial.write((uint8_t)zl);
 }
