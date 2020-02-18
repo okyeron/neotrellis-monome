@@ -17,7 +17,7 @@
 
 
 #define NUM_ROWS 8 // DIM_Y number of rows of keys down
-#define NUM_COLS 16 // DIM_X number of columns of keys across
+#define NUM_COLS 8 // DIM_X number of columns of keys across
 #define NUM_LEDS NUM_ROWS*NUM_COLS
 
 #define INT_PIN 9
@@ -40,19 +40,29 @@ char mfgstr[32] = "monome";
 char prodstr[32] = "monome";
 char serialstr[32] = "m4676124";
 
-elapsedMillis monomeRefresh;
 bool isInited = false;
+elapsedMillis monomeRefresh;
 
-int prevLedBuffer[512]; 
 
 // Monome class setup
 MonomeSerialDevice mdp;
 
+int prevLedBuffer[mdp.MAXLEDCOUNT]; 
+
+
 // NeoTrellis setup
+// 8x8 setup
 Adafruit_NeoTrellis trellis_array[NUM_ROWS / 4][NUM_COLS / 4] = {
-  { Adafruit_NeoTrellis(0x2E), Adafruit_NeoTrellis(0x2F) }, // top row
-  { Adafruit_NeoTrellis(0x36), Adafruit_NeoTrellis(0x3E) } // bottom row
+  { Adafruit_NeoTrellis(0x2E), Adafruit_NeoTrellis(0x30) },
+  { Adafruit_NeoTrellis(0x32), Adafruit_NeoTrellis(0x36) }
 };
+/*
+// 16x8 
+Adafruit_NeoTrellis trellis_array[NUM_ROWS / 4][NUM_COLS / 4] = {
+  { Adafruit_NeoTrellis(0x33), Adafruit_NeoTrellis(0x31), Adafruit_NeoTrellis(0x2F), Adafruit_NeoTrellis(0x2E)}, // top row
+  { Adafruit_NeoTrellis(0x35), Adafruit_NeoTrellis(0x39), Adafruit_NeoTrellis(0x3F), Adafruit_NeoTrellis(0x37) } // bottom row
+};
+*/
 Adafruit_MultiTrellis trellis((Adafruit_NeoTrellis *)trellis_array, NUM_ROWS / 4, NUM_COLS / 4);
 
 // gamma table for 16 levels of brightness
