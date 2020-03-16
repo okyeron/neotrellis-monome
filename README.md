@@ -31,7 +31,7 @@ The norns software requires some hacking/changes to get a DIY grid working. More
 
 * [neotrellis i2c address chart](NeoTrellis Addresses.txt) (for soldering the jumpers on each neotrellis board) - if you want to define your own addresses
 
-* new default address order in the code for 16x8 layout (__note__ the code reads backwards from the graphic above):  
+* new default address order in the code for 16x8 layout (__NOTE__ the address are in reverse order in the code - as compared to the graphic above):  
 ```
   { Adafruit_NeoTrellis(0x32), Adafruit_NeoTrellis(0x30), Adafruit_NeoTrellis(0x2F), Adafruit_NeoTrellis(0x2E)}, // top row
   { Adafruit_NeoTrellis(0x33), Adafruit_NeoTrellis(0x31), Adafruit_NeoTrellis(0x3E), Adafruit_NeoTrellis(0x36) } // bottom row
