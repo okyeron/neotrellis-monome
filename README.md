@@ -12,9 +12,28 @@ There is code for using an Adafruit ItsyBitsy M0 (and by extension the Feather M
 
 Compiled firmware for Feather M4 and ItsyBitsy M0 coming soon.
 
-## norns / fates / norns shield
+## compatibility
 
-The norns software requires some hacking/changes to get a DIY grid working. More on this later
+### Max or other computer-based applications
+
+At the time of writing, this code works as expected with the neotrellis-grid connected to a computer with Max running monome patches.
+
+### ansible/ trilogy modules
+
+Does not work. Don’t ask (unless you know C well and can help me make changes to libavr32).
+
+### norns /norns shield
+
+Officially unsupported. Hacking required. Proceed at your own risk. May void your warranty. Prohibited in some states.
+
+Unfortunately this code will not work right off the shelf with the stock norns codebase (norns and norns shield) due to some USB device management stuff.
+
+But... there is a hack workaround, but it does require changes to the norns C code. It’s not hard, but steps will need to be repeated after updates, etc. Contact me for instructions.
+
+###  Fates
+
+For Fates devices , I have a script in my repo which will run the fix.
+
 
 ## before building
 
@@ -46,6 +65,11 @@ The norns software requires some hacking/changes to get a DIY grid working. More
 * Be aware - the multitrellis array will fail to initialize if the addresses are wrong, or the wrong number of boards are attached.
 
 * There are Teensy specific i2c_t3 example sketches which can be used to double check your i2c addresses. See `File>Examples>i2c_t3>basic_scanner` for more.
+
+## build help / support / troubleshooting
+
+[see this thread](https://llllllll.co/t/diy-monome-compatible-grid-w-adafruit-neotrellis/28106?u=okyeron) on the lines forum for assistance.
+
 
 ## testing with serialosc on MacOS
 
