@@ -29,7 +29,7 @@ The norns software requires some hacking/changes to get a DIY grid working. More
 
 * [this graphic](neotrellis_addresses.jpg) shows a default layout of addresses and jumper positions for 8 neotrellis boards.
 
-* [neotrellis i2c address chart](NeoTrellis Addresses.txt) (for soldering the jumpers on each neotrellis board) - if you want to define your own addresses
+* [neotrellis i2c address chart](NeoTrellis_Addresses.txt) (for soldering the jumpers on each neotrellis board) - if you want to define your own addresses
 
 * new default address order in the code for 16x8 layout (__NOTE__ the address are in reverse order in the code - as compared to the graphic above):  
 ```
