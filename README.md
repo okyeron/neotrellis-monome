@@ -68,4 +68,4 @@ You can get both `serialosc` and `libmonome` code from [monome github page](http
 
 ## Case / Panel
 
-Work in progress
+[Work in progress](<enclosure/README.md>)
