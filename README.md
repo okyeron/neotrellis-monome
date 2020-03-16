@@ -4,32 +4,42 @@
 
 ## What is it?
 
-Code use a set of [Adafruit NeoTrellis boards](https://www.adafruit.com/product/3954) as a monome grid clone.
+Code to use a set of [Adafruit NeoTrellis boards](https://www.adafruit.com/product/3954) as a monome grid clone.
 
-Mostly tested using a Teensy 3.2 microcontroller. 
+Tested mostly using a Teensy 3.2 microcontroller. 
 
 There is code for using an Adafruit ItsyBitsy M0 (and by extension the Feather M0/M4), but this requires some changes to the underlying libraries (replacing the Adafruit_USBD_Device library deep in the adafruit/arduino core libraries).
 
+Compiled firmware for Feather M4 and ItsyBitsy M0 coming soon.
 
 ## norns / fates / norns shield
 
 The norns software requires some hacking/changes to get a DIY grid working. More on this later
 
-## neotrellis building/testing notes
+## before building
 
-* Review the [Adafruit tutorial on the neotrellis](https://learn.adafruit.com/adafruit-neotrellis/arduino-code) boards. NOTE - there's a typo on that page "the address would be 0x2E + 1 + 2 = 0x30." That address would be 0x31
+* Test each neotrellis board individually using the Adafruit examples in the `File>Examples>Adafruit seesaw Library>Neotrellis` menu. The Basic sketch is good for testing individual boards. The `multitrellis>basic` sketch is good once you have all the boards connected and addresses assigned.
+
+
+## neotrellis building
+
+* Review the [Adafruit tutorial on the neotrellis](https://learn.adafruit.com/adafruit-neotrellis/arduino-code) boards. 
+
+* [see this video](https://www.youtube.com/watch?v=petILmGcNwQ) for an example of how to join the boards together
+
+* [this graphic](neotrellis_addresses.jpg) shows a default layout of addresses and jumper positions for 8 neotrellis boards.
+
+* [neotrellis i2c address chart](NeoTrellis Addresses.txt) (for soldering the jumpers on each neotrellis board) - if you want to define your own addresses
 
 * Don't worry about the INT pin - it's not used in the grid software.
 
-* Be sure you have the Adafruit Seesaw libraries installed (via the Arduino Library Manager)
+## troubleshooting / testing 
 
-* Try to test each neotrellis board individually using the Adafruit examples in the File>Examples>Adafruit seesaw Library>Neotrellis menu. The Basic sketch is good for testing individual boards. The multitrellis>basic sketch is good once you have all the boards connected and addresses assigned.
+* Be sure you have the Adafruit Seesaw libraries installed and are up to date (via the Arduino Library Manager)
 
-* [neotrellis i2c address chart](./NeoTrellis Addresses.txt) (for soldering the jumpers on each neotrellis board)
+* Be aware - the multitrellis array will fail to initialize if the addresses are wrong, or the wrong number of boards are attached.
 
-* The multitrellis array will fail to init if the addresses are wrong, or the wrong number of boards are attached.
-
-* The Teensy specific i2c_t3 examples can be used to double check your i2c addresses. See File>Examples>i2c_t3>basic_scanner for more.
+* There are Teensy specific i2c_t3 example sketches which can be used to double check your i2c addresses. See `File>Examples>i2c_t3>basic_scanner` for more.
 
 ## testing with serialosc on MacOS
 
