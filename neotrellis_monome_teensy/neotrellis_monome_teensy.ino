@@ -47,12 +47,20 @@ MonomeSerialDevice mdp;
 
 int prevLedBuffer[mdp.MAXLEDCOUNT]; 
 
-
 // NeoTrellis setup
+/*
+// 8x8 setup
 Adafruit_NeoTrellis trellis_array[NUM_ROWS / 4][NUM_COLS / 4] = {
-  { Adafruit_NeoTrellis(0x33), Adafruit_NeoTrellis(0x31), Adafruit_NeoTrellis(0x2F), Adafruit_NeoTrellis(0x2E)}, // top row
-  { Adafruit_NeoTrellis(0x35), Adafruit_NeoTrellis(0x39), Adafruit_NeoTrellis(0x3F), Adafruit_NeoTrellis(0x37) } // bottom row
+  { Adafruit_NeoTrellis(0x2E), Adafruit_NeoTrellis(0x2F) },
+  { Adafruit_NeoTrellis(0x36), Adafruit_NeoTrellis(0x3E) }
 };
+*/
+// 16x8 
+Adafruit_NeoTrellis trellis_array[NUM_ROWS / 4][NUM_COLS / 4] = {
+  { Adafruit_NeoTrellis(0x32), Adafruit_NeoTrellis(0x30), Adafruit_NeoTrellis(0x2F), Adafruit_NeoTrellis(0x2E)}, // top row
+  { Adafruit_NeoTrellis(0x33), Adafruit_NeoTrellis(0x31), Adafruit_NeoTrellis(0x3E), Adafruit_NeoTrellis(0x36) } // bottom row
+};
+
 Adafruit_MultiTrellis trellis((Adafruit_NeoTrellis *)trellis_array, NUM_ROWS / 4, NUM_COLS / 4);
 
 // gamma table for 16 levels of brightness
