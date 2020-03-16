@@ -72,6 +72,10 @@ For Fates devices , I have a script in my repo which will run the fix.
 
 [see this thread](https://llllllll.co/t/diy-monome-compatible-grid-w-adafruit-neotrellis/28106?u=okyeron) on the lines forum for assistance.
 
+## alternate firmware for color palettes 
+
+https://github.com/oldmanfury/neotrellis-grid-paletted
+
 
 ## testing with serialosc on MacOS
 
