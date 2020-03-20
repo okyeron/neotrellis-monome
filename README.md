@@ -68,6 +68,10 @@ For Fates devices , I have a script in my repo which will run the fix.
 
 * Don't worry about the INT pin - it's not used in the grid software.
 
+## firmware flashing
+
+For the Teensy firmware - be sure you have Arduino settings `Tools -> USB Type` set to `Serial`
+
 ## troubleshooting / testing 
 
 * Be sure you have the Adafruit Seesaw libraries installed and are up to date (via the Arduino Library Manager)
