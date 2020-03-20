@@ -72,6 +72,10 @@ For Fates devices , I have a script in my repo which will run the fix.
 
 For the Teensy firmware - be sure you have Arduino settings `Tools -> USB Type` set to `Serial`
 
+Not critical, but set `Tools -> CPU Speed` to `120 MHz (overclock)`
+
+For reference: [here's a forum post on how to flash Teensy firmware](https://llllllll.co/t/how-to-flash-the-firmware-on-a-teensy-micro-controller/20317)
+
 ## troubleshooting / testing 
 
 * Be sure you have the Adafruit Seesaw libraries installed and are up to date (via the Arduino Library Manager)
