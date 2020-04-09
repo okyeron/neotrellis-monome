@@ -34,6 +34,8 @@ But... there is a hack workaround, but it does require changes to the norns C co
 
 For Fates devices , I have a script in my repo which will run the fix.
 
+# Build
+
 ## BOM:  
 
 8 [Adafruit NeoTrellis driver boards](https://www.adafruit.com/product/3954) [alt [Mouser](https://www.mouser.com/ProductDetail/485-3954) | [Digikey](https://www.digikey.com/products/en?keywords=1528-2712-ND) ]    
