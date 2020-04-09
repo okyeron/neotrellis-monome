@@ -109,7 +109,13 @@ Max apps for testing:
 [test-grid](https://github.com/monome/serialosc.maxpat)  
 
 
-## references
+# Case / Enclosure
+
+[Work in progress](<enclosure/README.md>)
+
+
+
+# references
 
 ### mext / monome serial protocol
 
@@ -122,6 +128,3 @@ The mext protocol is used for serial communication - same as what is used in mos
 You can get both `serialosc` and `libmonome` code from [monome github page](https://github.com/monome), and building them is well documented on official linux docs (they work for macOS as well), read part *2 Preparing your system: serialosc* (ignoring the `sudo apt-get` - I was missing `liblo`, but it's available on homebrew): [monome.org/docs/linux/](https://monome.org/docs/linux/).
 
 
-## Case / Panel
-
-[Work in progress](<enclosure/README.md>)
