@@ -56,7 +56,9 @@ For Fates devices , I have a script in my repo which will run the fix.
 
 * [see this video](https://www.youtube.com/watch?v=petILmGcNwQ) for an example of how to join the boards together
 
-* [this graphic](neotrellis_addresses.jpg) shows a default layout of addresses and jumper positions for 8 neotrellis boards.
+## neotrellis address assignment
+
+* [see this graphic](neotrellis_addresses.jpg) for a default layout of addresses and jumper positions for 8 neotrellis boards.
 
 * new default address order in the code for 16x8 layout (__NOTE__ the address are in reverse order in the code - as compared to the graphic above):  
 ```
