@@ -2,13 +2,13 @@
 
 This is one example of an enclosure for the neotrellis grid - using a Teensy 3.2 and Adafruit [USB micro breakout](https://www.adafruit.com/product/1833)
 
-![<grid>](<IMG_2861.jpg>)
+![<grid>](<grid-top.jpg>)
 
-![<grid compare with monome grid>](<IMG_2855.jpg>)
+![<grid compare with monome grid>](<grid-compare.jpg>)
 
 It's a "stack" of laser cut 3mm acrylic and one layer of 5mm EVA foam. I'm using six 2.5M 11mm standoffs and 2.5M screws to attach everything.  
 
-![<stack parts>](<IMG_2867.jpg>)
+![<stack parts>](<case-parts.jpg>)
 
 (this photo is a slightly older layout)
 
@@ -27,7 +27,7 @@ Putting the Teensy in the case, you want to be sure it's as flat as possible (se
 
 Kinda ugly example of the teensy and usb breakout wiring for this case layout: 
 
-![<teensy with usb breakout>](<IMG_3188.jpg>)
+![<teensy with usb breakout>](<breakout-wiring.jpg>)
 
 ## next generation - flexible pcb carrier
 
@@ -35,7 +35,7 @@ As a replacement for the slightly janky free-wiring, I designed a flexible PCB c
 
 This gets everything Super Flat and Awesome.
 
-![<flexi-pcb>](<IMG_3082-1080.jpg>)
+![<flexi-pcb>](<flexi-pcb4-1080.jpg>)
 ![<flexi-pcb>](<flexi-pcb-1080.jpg>)
-![<flexi-pcb>](<IMG_3081-1080.jpg>)
-![<flexi-pcb>](<IMG_3089-1080.jpg>)
+![<flexi-pcb>](<flexi-pcb3-1080.jpg>)
+![<flexi-pcb>](<flexi-pcb2-1080.jpg>)
