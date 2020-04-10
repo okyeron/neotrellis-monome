@@ -29,6 +29,9 @@ Kinda ugly example of the teensy and usb breakout wiring for this case layout:
 
 ![<teensy with usb breakout>](<breakout-wiring.jpg>)
 
+![<teensy with usb breakout>](<teensy-wiring.jpg>)
+
+
 ## next generation - flexible pcb carrier
 
 As a replacement for the slightly janky free-wiring, I designed a flexible PCB carrier for the Teensy and the USB breakout.
