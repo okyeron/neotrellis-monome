@@ -98,6 +98,28 @@ For reference: [here's a forum post on how to flash Teensy firmware](https://lll
 
 https://github.com/oldmanfury/neotrellis-grid-paletted
 
+## norns shield
+
+If you're on norns shield with 200218 do the following (if you're on another version, update first).
+
+NOTE - Be aware this is a hack/workaround and is not officially supported.
+Proceed at your own risk
+
+```
+cd ~/
+sudo apt-get update
+sudo apt-get install libncurses5-dev libncursesw5-dev
+wget https://raw.githubusercontent.com/okyeron/fates/master/install/norns/files/device/device_monitor.c
+cd ~/norns
+git pull
+git submodule update --init --recursive
+sudo cp -f /home/we/device_monitor.c /home/we/norns/matron/src/device/device_monitor.c
+rm /home/we/device_monitor.c
+./waf clean
+./waf configure --enable-ableton-link
+./waf build
+sudo reboot
+```
 
 ## testing with serialosc on MacOS
 
