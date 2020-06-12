@@ -23,7 +23,7 @@
 
 // This assumes you are using a USB breakout board to route power to the board 
 // If you are plugging directly into the teensy, you will need to adjust this brightness to a much lower value
-#define BRIGHTNESS 255 // overall grid brightness - use gamma table below to adjust levels
+#define BRIGHTNESS 127 // overall grid brightness - use gamma table below to adjust levels
 
 #define R 255
 #define G 255
