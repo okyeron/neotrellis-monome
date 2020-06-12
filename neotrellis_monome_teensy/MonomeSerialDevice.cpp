@@ -335,11 +335,14 @@ void MonomeSerialDevice::processSerial() {
           while (readY > 16) { readY += 16; }         // hacky shit to deal with negative numbers from rotation
           readY &= 0xF8;                              // floor the offset to 0 or 8
 
+          byte statemap[8];
+          byte state;
+          Serial.readBytes(statemap, 8);
           for (y = 0; y < 8; y++) {               // each i will be a row
-            intensity = Serial.read();            // read one byte of 8 bits on/off
+            state = statemap[y];            // read one byte of 8 bits on/off
     
             for (x = 0; x < 8; x++) {             // for 8 LEDs on a row
-              if ((intensity >> x) & 0x01) {      // if intensity bit set, light led full brightness
+              if ((state >> x) & 0x01) {      // if intensity bit set, light led full brightness
                 setGridLed(readX + x, readY + y, defaultIntensity); 
               }
               else {
@@ -355,6 +358,7 @@ void MonomeSerialDevice::processSerial() {
           readX &= 0xF8;                              // floor the offset to 0 or 8
 
           readY = Serial.read();                      // 
+
           intensity = Serial.read();                  // read one byte of 8 bits on/off
 
           for (x = 0; x < 8; x++) {               // for the next 8 lights in row
@@ -369,9 +373,9 @@ void MonomeSerialDevice::processSerial() {
 
         case 0x16:                                //  /prefix/led/col x y d
           readX = Serial.read();                      // led-grid / column set
-
           readY = Serial.read();
           while (readY > 16) { readY += 16; }         // hacky shit to deal with negative numbers from rotation
+  
           readY &= 0xF8;                              // floor the offset to 0 or 8
 
           intensity = Serial.read();                  // read one byte of 8 bits on/off
@@ -410,13 +414,16 @@ void MonomeSerialDevice::processSerial() {
           readX &= 0xF8;                              // floor the offset to 0 or 8
           readY = Serial.read();                      // y offset
           while (readY > 16) { readY += 16; }         // hacky shit to deal with negative numbers from rotation
-          readY &= 0xF8;                              // floor the offset to 0 or 8
-          
-          z = 0;
+          readY &= 0xF8;                             // floor the offset to 0 or 8
+
+          int z = 0;
+          byte map_intensities[64];
+          Serial.readBytes(map_intensities, 64);
           for (y = 0; y < 8; y++) {
             for (x = 0; x < 8; x++) {
-              intensity = Serial.read();
+              intensity = map_intensities[z];
               setGridLed(readX + x, readY + y, intensity);
+              z++;
             }
           }
           
@@ -428,9 +435,13 @@ void MonomeSerialDevice::processSerial() {
           readX &= 0xF8;                              // floor the offset to 0 or 8
           readY = Serial.read();                      // y offset
           while (readY > 16) { readY += 16; }         // hacky shit to deal with negative numbers from rotation
-          readY &= 0xF8;                              // floor the offset to 0 or 8
+          readY &= 0xF8;  // floor the offset to 0 or 8
+
+          byte row_intensities[8];
+          Serial.readBytes(row_intensities, 8);
+
           for (x = 0; x < 8; x++) {
-             intensity = Serial.read();
+             intensity = row_intensities[x];
              setGridLed(readX + x, readY, intensity);
           }
           break;
@@ -442,13 +453,14 @@ void MonomeSerialDevice::processSerial() {
           readY = Serial.read();                      // y offset
           while (readY > 16) { readY += 16; }         // hacky shit to deal with negative numbers from rotation
           readY &= 0xF8;                              // floor the offset to 0 or 8
+          
+          byte col_intensities[8];
+          Serial.readBytes(col_intensities, 8);
           for (y = 0; y < 8; y++) {
-             intensity = Serial.read();
+             intensity = col_intensities[y];
              setGridLed(readX, readY + y, intensity);
           }
           break;
-
-
 
     // 0x20 and 0x21 are for a Key inputs (grid) - see readKeys() function
 
