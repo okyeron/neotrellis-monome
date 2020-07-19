@@ -56,16 +56,13 @@ void MonomeSerialDevice::setAllLEDs(int value) {
 }
 
 void MonomeSerialDevice::setGridLed(uint8_t x, uint8_t y, uint8_t level) {
-    int index = x + (y * columns);
-/*    
-    if (columns > 8){
-      index = x + (y << 4);
-    }else {
-      index = x + (y << 3);
-    }
-*/    
-    if (index < MAXLEDCOUNT) leds[index] = level;
+//    int index = x + (y * columns);   
+//    if (index < MAXLEDCOUNT) leds[index] = level;
 
+    if (x < columns && y < rows) {
+      uint32_t index = y * columns + x;
+      leds[index] = level;
+    }
     //debugfln(INFO, "LED index: %d x %d y %d", index, x, y);
 }
         
