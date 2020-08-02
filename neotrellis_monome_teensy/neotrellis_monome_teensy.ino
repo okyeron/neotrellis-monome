@@ -51,8 +51,8 @@ int prevLedBuffer[mdp.MAXLEDCOUNT];
 /*
 // 8x8 setup
 Adafruit_NeoTrellis trellis_array[NUM_ROWS / 4][NUM_COLS / 4] = {
-  { Adafruit_NeoTrellis(0x2E), Adafruit_NeoTrellis(0x2F) },
-  { Adafruit_NeoTrellis(0x36), Adafruit_NeoTrellis(0x3E) }
+  { Adafruit_NeoTrellis(0x2F), Adafruit_NeoTrellis(0x2E) },
+  { Adafruit_NeoTrellis(0x3E), Adafruit_NeoTrellis(0x36) }
 };
 */
 // 16x8 
