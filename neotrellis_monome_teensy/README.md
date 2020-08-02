@@ -22,5 +22,6 @@ Adafruit_NeoTrellis trellis_array[NUM_ROWS / 4][NUM_COLS / 4] = {
 
 These are in order right to left as you look at the BACK of the grid. So from the front/grid side, these will be flipped.
 
-* see this graphicfor a default layout of addresses and jumper positions for 8 neotrellis boards.
+* see this graphic for a default layout of addresses and jumper positions for 8 neotrellis boards (16x8 layout). For an 8x8 just use the left half.  
+
 ![neotrellis_addresses.jpg](../neotrellis_addresses.jpg)
