@@ -24,11 +24,11 @@ Does not work. Don’t ask (unless you know C well and can help me make changes 
 
 ### norns /norns shield
 
-Officially unsupported. Hacking required. Proceed at your own risk. May void your warranty. Prohibited in some states.
+Officially unsupported. Hacking required. Proceed at your own risk. May void your warranty. Prohibited in some states. 
 
 Unfortunately this code will not work right off the shelf with the stock norns codebase (norns and norns shield) due to some USB device management stuff.
 
-But... there is a hack workaround, but it does require changes to the norns C code. It’s not hard, but steps will need to be repeated after updates, etc. Contact me for instructions.
+But... there is a hack workaround, but it does require changes to the norns C code. It’s not hard, but steps will need to be repeated after updates, etc. See Below.
 
 ###  Fates
 
@@ -100,10 +100,12 @@ https://github.com/oldmanfury/neotrellis-grid-paletted
 
 ## norns shield
 
-If you're on norns shield with 200218 do the following (if you're on another version, update first).
+If you're on norns shield with 200218 or later do the following (probably a good idea to update first anyway).
 
 NOTE - Be aware this is a hack/workaround and is not officially supported.
 Proceed at your own risk
+
+NOTE 2 - this workaround will be erased with any norns system update. Re-apply after system updates.
 
 ```
 cd ~/
