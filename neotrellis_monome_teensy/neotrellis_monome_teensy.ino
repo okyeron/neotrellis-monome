@@ -1,19 +1,23 @@
-/* 
- *  NeoTrellis Grid
+/***********************************************************
+ *  DIY monome compatible grid w/ Adafruit NeoTrellis
+ *  for Teensy
  *  
- *  Many thanks to scanner_darkly, Szymon Kaliski, John Park, todbot, Juanma and others
+ *  This code makes the Adafruit Neotrellis boards into a Monome compatible grid via monome's mext protocol
+ *  ----> https://www.adafruit.com/product/3954
+ *  
+ *  Code here is for a 16x8 grid, but can be modified for 4x8, 8x8, or 16x16 (untested on larger grid arrays)
+ *  
+ *  Many thanks to: 
+ *  scanner_darkly <https://github.com/scanner-darkly>, 
+ *  TheKitty <https://github.com/TheKitty>, 
+ *  Szymon Kaliski <https://github.com/szymonkaliski>, 
+ *  John Park, Todbot, Juanma, Gerald Stevens, and others
  *
 */
+
 #include "MonomeSerialDevice.h"
 #include <Adafruit_NeoTrellis.h>
 #include "debug.h"
-
-// IF USING ADAFRUIT M0 or M4 BOARD
-#define M0 0
-//#include <Arduino.h>
-//#include <Adafruit_TinyUSB.h>
-//#include <elapsedMillis.h>
-
 
 #define NUM_ROWS 8 // DIM_Y number of rows of keys down
 #define NUM_COLS 16 // DIM_X number of columns of keys across
@@ -25,27 +29,29 @@
 // If you are plugging directly into the teensy, you will need to adjust this brightness to a much lower value
 #define BRIGHTNESS 255 // overall grid brightness - use gamma table below to adjust levels
 
+// RGB values - vary for colors other than white
 #define R 255
 #define G 255
 #define B 255
-//  amber? {255,191,0}
+//  amber-ish {255,191,0}
 //  warmer white? {255,255,200}
 
-// set your monome device name here
-String deviceID = "neo-monome";
+// Gamma table to customize 16 levels of brightness
+// RGB values above will be scaled to these
+const uint8_t gammaTable[16] = { 2,  3,  4,  6,  11, 18, 25, 32, 41, 59, 70, 80, 92, 103, 115, 128}; 
 
-// DEVICE INFO FOR ADAFRUIT M0 or M4
-char mfgstr[32] = "monome";
-char prodstr[32] = "monome";
 
 bool isInited = false;
 elapsedMillis monomeRefresh;
 
+// set your monome device name here
+String deviceID = "neo-monome";
 
 // Monome class setup
 MonomeSerialDevice mdp;
 
 int prevLedBuffer[mdp.MAXLEDCOUNT]; 
+
 
 // NeoTrellis setup
 /*
@@ -57,14 +63,11 @@ Adafruit_NeoTrellis trellis_array[NUM_ROWS / 4][NUM_COLS / 4] = {
 */
 // 16x8 
 Adafruit_NeoTrellis trellis_array[NUM_ROWS / 4][NUM_COLS / 4] = {
-  { Adafruit_NeoTrellis(0x32), Adafruit_NeoTrellis(0x30), Adafruit_NeoTrellis(0x2F), Adafruit_NeoTrellis(0x2E)}, // top row
+  { Adafruit_NeoTrellis(0x32), Adafruit_NeoTrellis(0x30), Adafruit_NeoTrellis(0x2F), Adafruit_NeoTrellis(0x2E) }, // top row
   { Adafruit_NeoTrellis(0x33), Adafruit_NeoTrellis(0x31), Adafruit_NeoTrellis(0x3E), Adafruit_NeoTrellis(0x36) } // bottom row
 };
 
 Adafruit_MultiTrellis trellis((Adafruit_NeoTrellis *)trellis_array, NUM_ROWS / 4, NUM_COLS / 4);
-
-// gamma table for 16 levels of brightness
-const uint8_t gammaTable[16] = { 2,  3,  4,  6,  11, 18, 25, 32, 41, 59, 70, 80, 92, 103, 115, 128}; 
 
 
 
@@ -100,25 +103,22 @@ uint32_t Wheel(byte WheelPos) {
 // ***************************************************************************
 
 
-//define a callback for key presses
+// Define a callback for key presses
 TrellisCallback keyCallback(keyEvent evt){
-  uint8_t x;
-  uint8_t y;
-  x  = evt.bit.NUM % NUM_COLS; //NUM_COLS; 
-  y = evt.bit.NUM / NUM_COLS; //NUM_COLS; 
-  if(evt.bit.EDGE == SEESAW_KEYPAD_EDGE_RISING){
-    //on
-    //Serial.println(" pressed ");
-    mdp.sendGridKey(x, y, 1);
-  }else if(evt.bit.EDGE == SEESAW_KEYPAD_EDGE_FALLING){
-    //off 
-    //Serial.println(" released ");
-    mdp.sendGridKey(x, y, 0);
-  }
-  //sendLeds();
-  //trellis.show();
-  return 0;
-  
+	uint8_t x;
+	uint8_t y;
+	x  = evt.bit.NUM % NUM_COLS; // NUM_COLS; 
+	y = evt.bit.NUM / NUM_COLS; // NUM_COLS; 
+	if(evt.bit.EDGE == SEESAW_KEYPAD_EDGE_RISING){
+		//on
+		//Serial.println(" pressed ");
+		mdp.sendGridKey(x, y, 1);
+	}else if(evt.bit.EDGE == SEESAW_KEYPAD_EDGE_FALLING){
+		//off 
+		//Serial.println(" released ");
+		mdp.sendGridKey(x, y, 0);
+	}
+	return 0;
 }
 
 // ***************************************************************************
@@ -126,58 +126,45 @@ TrellisCallback keyCallback(keyEvent evt){
 // ***************************************************************************
 
 void setup(){
-/*
-// for Adafruit M0 or M4
-  pad_with_nulls(mfgstr, 32);
-  pad_with_nulls(prodstr, 32);
-  USBDevice.setManufacturerDescriptor(mfgstr);
-  USBDevice.setProductDescriptor(prodstr);
-*/
+	uint8_t x, y;
 	Serial.begin(115200);
-  
+
+  if (!trellis.begin()) {
+    Serial.println("trellis.begin() failed!");
+    Serial.println("check your addresses.");
+    Serial.println("reset to try again.");
+    while(1);  // loop forever
+  }
+
+ 	// monome connection setup
   mdp.isMonome = true;
   mdp.deviceID = deviceID;
   mdp.setupAsGrid(NUM_ROWS, NUM_COLS);
 
-//  delay(200);
-
-  trellis.begin();
-  
-/*	if(!trellis.begin()){
-		Serial.println("failed to begin trellis");
-		while(1);
+	// setup trellis key callbacks
+	for (y = 0; y < NUM_ROWS; y++) {
+		for (x = 0; x < NUM_COLS; x++) {
+		  trellis.activateKey(x, y, SEESAW_KEYPAD_EDGE_RISING, true);
+		  trellis.activateKey(x, y, SEESAW_KEYPAD_EDGE_FALLING, true);
+		  trellis.registerCallback(x, y, keyCallback);
+		}
 	}
-*/
+  
   // set overall brightness for all pixels
-  uint8_t x, y;
   for (x = 0; x < NUM_COLS / 4; x++) {
     for (y = 0; y < NUM_ROWS / 4; y++) {
       trellis_array[y][x].pixels.setBrightness(BRIGHTNESS);
     }
   }
 
-// rainbow startup 
-/*
-  for(int i=0; i<NUM_ROWS*NUM_COLS; i++){
-      trellis.setPixelColor(i, Wheel(map(i, 0, NUM_ROWS*NUM_COLS, 0, 255))); //addressed with keynum
-      trellis.show();
-      delay(2);
-  }
-*/ 
-  // key callback
-	for (x = 0; x < NUM_COLS; x++) {
-		for (y = 0; y < NUM_ROWS; y++) {
-		  trellis.activateKey(x, y, SEESAW_KEYPAD_EDGE_RISING, true);
-		  trellis.activateKey(x, y, SEESAW_KEYPAD_EDGE_FALLING, true);
-      trellis.registerCallback(x, y, keyCallback);
-		}
-	}
-  delay(300);
+  // clear grid leds
+  // delay(100);
   mdp.setAllLEDs(0);
   sendLeds();
   monomeRefresh = 0;
   isInited = true;
-  // blink one led to show it's started up  
+
+  // Blink one led to show it's started up  
   trellis.setPixelColor(0, 0xFFFFFF);
   trellis.show();
   delay(100);
