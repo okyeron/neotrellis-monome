@@ -100,7 +100,7 @@ https://github.com/oldmanfury/neotrellis-grid-paletted
 
 ## norns shield
 
-If you're on norns shield with 200218 or later do the following (probably a good idea to update first anyway).
+Update your norns shield to 201029 or newer.
 
 NOTE - Be aware this is a hack/workaround and is not officially supported.
 Proceed at your own risk
@@ -113,11 +113,10 @@ sudo apt-get update
 sudo apt-get install libncurses5-dev libncursesw5-dev
 wget https://raw.githubusercontent.com/okyeron/fates/master/install/norns/files/device/device_monitor-201029.c
 cd ~/norns
-git pull
-git submodule update --init --recursive
+./stop.sh 
 sudo cp -f /home/we/device_monitor-201029.c /home/we/norns/matron/src/device/device_monitor.c
 rm /home/we/device_monitor-201029.c
-./waf clean
+
 ./waf configure --enable-ableton-link
 ./waf build
 sudo reboot
