@@ -111,12 +111,12 @@ NOTE 2 - this workaround will be erased with any norns system update. Re-apply a
 cd ~/
 sudo apt-get update
 sudo apt-get install libncurses5-dev libncursesw5-dev
-wget https://raw.githubusercontent.com/okyeron/fates/master/install/norns/files/device/device_monitor.c
+wget https://raw.githubusercontent.com/okyeron/fates/master/install/norns/files/device/device_monitor-201029.c
 cd ~/norns
 git pull
 git submodule update --init --recursive
-sudo cp -f /home/we/device_monitor.c /home/we/norns/matron/src/device/device_monitor.c
-rm /home/we/device_monitor.c
+sudo cp -f /home/we/device_monitor-201029.c /home/we/norns/matron/src/device/device_monitor.c
+rm /home/we/device_monitor-201029.c
 ./waf clean
 ./waf configure --enable-ableton-link
 ./waf build
