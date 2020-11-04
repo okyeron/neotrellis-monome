@@ -107,7 +107,7 @@ Proceed at your own risk
 
 NOTE 2 - this workaround will be erased with any norns system update. Re-apply after system updates.
 
-Connect to your norns shield via SSH and execute the following commands:
+Connect to your norns shield via SSH and execute the following commands:  
 (See [the norns docs](https://monome.org/docs/norns/play/#ssh) for help on getting connected)
 ```
 cd ~/
