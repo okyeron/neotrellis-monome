@@ -46,6 +46,11 @@ For Fates devices , I have a script in my repo which will run the fix.
 
 1 [Teensy 3.2](https://www.pjrc.com/store/teensy32.html) [alt [Adafruit](https://www.adafruit.com/product/2756) ]  
 
+### optional
+
+1 [Adafruit STEMMA/JST-PH 4-pin cable](https://www.adafruit.com/product/3568) - for testing inndividual neotrellis boards before assembly. Cut the cable in half and wire to the appropriate pins on a Teensy or other microcontroller (VIN, GND, SCL, SDA). See the neotrellis boards themselves for the pin-out.
+
+Standard pin headers - 10 1x5 pin headers can be used for joining the neotrellis boards together. [See video](https://www.youtube.com/watch?v=petILmGcNwQ)
 
 ## before building
 
