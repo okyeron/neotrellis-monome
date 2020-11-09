@@ -18,9 +18,11 @@ Compiled firmware for Feather M4 and ItsyBitsy M0 coming soon.
 
 At the time of writing, this code works as expected with the neotrellis-grid connected to a computer with Max running monome patches.
 
-### ansible/ trilogy modules
+### ansible / teletype / trilogy modules
 
-Does not work. Don’t ask (unless you know C well and can help me make changes to libavr32).
+Does not work (with this configuration). Don’t ask (unless you know C well and can help me make changes to libavr32).
+
+Some people have undertaken trying to use an FTDI board in-between the teensy and the monome modules. Not 100% ready for prime time. [See the lines forum thread](https://llllllll.co/t/diy-monome-compatible-grid-w-adafruit-neotrellis/28106/) for more info.
 
 ### norns /norns shield
 
@@ -32,7 +34,7 @@ But... there is a hack workaround, but it does require changes to the norns C co
 
 ###  Fates
 
-For Fates devices , I have a script in my repo which will run the fix.
+For Fates devices this should be fucntional by default on the most recent firmwares.
 
 # Build
 
@@ -79,11 +81,12 @@ Standard pin headers - 10 1x5 pin headers can be used for joining the neotrellis
 
 ## firmware flashing
 
+For reference: [here's a forum post on how to flash Teensy firmware](https://llllllll.co/t/how-to-flash-the-firmware-on-a-teensy-micro-controller/20317)
+
 For the Teensy firmware - be sure you have Arduino settings `Tools -> USB Type` set to `Serial`
 
 Not critical, but set `Tools -> CPU Speed` to `120 MHz (overclock)`
 
-For reference: [here's a forum post on how to flash Teensy firmware](https://llllllll.co/t/how-to-flash-the-firmware-on-a-teensy-micro-controller/20317)
 
 ## troubleshooting / testing 
 
