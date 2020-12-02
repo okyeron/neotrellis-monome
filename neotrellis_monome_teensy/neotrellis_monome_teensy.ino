@@ -129,17 +129,26 @@ void setup(){
 	uint8_t x, y;
 	Serial.begin(115200);
 
+   // monome connection setup
+  mdp.isMonome = true;
+  mdp.deviceID = deviceID;
+  mdp.setupAsGrid(NUM_ROWS, NUM_COLS);
+  monomeRefresh = 0;
+  isInited = true;
+
+  int var = 0;
+  while (var < 8) {
+    mdp.poll();
+    var++;
+    delay(100);
+  }
+
   if (!trellis.begin()) {
     Serial.println("trellis.begin() failed!");
     Serial.println("check your addresses.");
     Serial.println("reset to try again.");
     while(1);  // loop forever
   }
-
- 	// monome connection setup
-  mdp.isMonome = true;
-  mdp.deviceID = deviceID;
-  mdp.setupAsGrid(NUM_ROWS, NUM_COLS);
 
 	// setup trellis key callbacks
 	for (y = 0; y < NUM_ROWS; y++) {
@@ -161,8 +170,6 @@ void setup(){
   // delay(100);
   mdp.setAllLEDs(0);
   sendLeds();
-  monomeRefresh = 0;
-  isInited = true;
 
   // Blink one led to show it's started up  
   trellis.setPixelColor(0, 0xFFFFFF);
