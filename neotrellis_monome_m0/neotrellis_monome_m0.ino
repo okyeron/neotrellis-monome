@@ -1,23 +1,35 @@
-/* 
- *  NeoTrellis Grid
+/***********************************************************
+ *  DIY monome compatible grid w/ Adafruit NeoTrellis
+ *  for Feather M0 / M4
  *  
- *  Many thanks to scanner_darkly, Szymon Kaliski, John Park, todbot, Juanma and others
+ *  This code makes the Adafruit Neotrellis boards into a Monome compatible grid via monome's mext protocol
+ *  ----> https://www.adafruit.com/product/3954
+ *  
+ *  Code here is for a 16x8 grid, but can be modified for 4x8, 8x8, or 16x16 (untested on larger grid arrays)
+ *  
+ *  Many thanks to: 
+ *  scanner_darkly <https://github.com/scanner-darkly>, 
+ *  TheKitty <https://github.com/TheKitty>, 
+ *  Szymon Kaliski <https://github.com/szymonkaliski>, 
+ *  John Park, Todbot, Juanma, Gerald Stevens, and others
  *
 */
+
+
 #include "MonomeSerialDevice.h"
 #include <Adafruit_NeoTrellis.h>
 
 // SET TOOLS USB STACK TO TinyUSB
 
 // IF USING ADAFRUIT M0 or M4 BOARD
-#define M0 0
+#define M0 1
 #include <Arduino.h>
 #include <Adafruit_TinyUSB.h>
 #include <elapsedMillis.h>
 
 
 #define NUM_ROWS 8 // DIM_Y number of rows of keys down
-#define NUM_COLS 8 // DIM_X number of columns of keys across
+#define NUM_COLS 16 // DIM_X number of columns of keys across
 #define NUM_LEDS NUM_ROWS*NUM_COLS
 
 #define INT_PIN 9
@@ -31,18 +43,21 @@
 #define G 255
 #define B 255
 
-// set your monome device name here
-String deviceID = "neo-monome";
-String serialNum = "m4676124";
+// gamma table for 16 levels of brightness
+const uint8_t gammaTable[16] = { 0,  2,  3,  6,  11, 18, 25, 32, 41, 59, 70, 80, 92, 103, 115, 128}; 
 
-// DEVICE INFO FOR ADAFRUIT M0 or M4 
-char mfgstr[32] = "monome";
-char prodstr[32] = "monome";
-char serialstr[32] = "m4676124";
 
 bool isInited = false;
 elapsedMillis monomeRefresh;
 
+// set your monome device name here
+String deviceID = "neo-monome";
+String serialNum = "m4216124";
+
+// DEVICE INFO FOR ADAFRUIT M0 or M4 
+char mfgstr[32] = "monome";
+char prodstr[32] = "monome";
+char serialstr[32] = "m4216124";
 
 // Monome class setup
 MonomeSerialDevice mdp;
@@ -51,22 +66,20 @@ int prevLedBuffer[mdp.MAXLEDCOUNT];
 
 
 // NeoTrellis setup
+/*
 // 8x8 setup
 Adafruit_NeoTrellis trellis_array[NUM_ROWS / 4][NUM_COLS / 4] = {
   { Adafruit_NeoTrellis(0x2E), Adafruit_NeoTrellis(0x30) },
   { Adafruit_NeoTrellis(0x32), Adafruit_NeoTrellis(0x36) }
 };
-/*
+*/
 // 16x8 
 Adafruit_NeoTrellis trellis_array[NUM_ROWS / 4][NUM_COLS / 4] = {
   { Adafruit_NeoTrellis(0x33), Adafruit_NeoTrellis(0x31), Adafruit_NeoTrellis(0x2F), Adafruit_NeoTrellis(0x2E)}, // top row
   { Adafruit_NeoTrellis(0x35), Adafruit_NeoTrellis(0x39), Adafruit_NeoTrellis(0x3F), Adafruit_NeoTrellis(0x37) } // bottom row
 };
-*/
-Adafruit_MultiTrellis trellis((Adafruit_NeoTrellis *)trellis_array, NUM_ROWS / 4, NUM_COLS / 4);
 
-// gamma table for 16 levels of brightness
-const uint8_t gammaTable[16] = { 0,  2,  3,  6,  11, 18, 25, 32, 41, 59, 70, 80, 92, 103, 115, 128}; 
+Adafruit_MultiTrellis trellis((Adafruit_NeoTrellis *)trellis_array, NUM_ROWS / 4, NUM_COLS / 4);
 
 
 // ***************************************************************************
@@ -123,6 +136,8 @@ TrellisCallback keyCallback(keyEvent evt){
 // ***************************************************************************
 
 void setup(){
+	uint8_t x, y;
+
 	// for Adafruit M0 or M4
 	pad_with_nulls(mfgstr, 32);
 	pad_with_nulls(prodstr, 32);
@@ -136,26 +151,24 @@ void setup(){
 	mdp.isMonome = true;
 	mdp.deviceID = deviceID;
 	mdp.setupAsGrid(NUM_ROWS, NUM_COLS);
+  	monomeRefresh = 0;
+  	isInited = true;
 
-	trellis.begin();
-
-	// set overall brightness for all pixels
-	uint8_t x, y;
-	for (x = 0; x < NUM_COLS / 4; x++) {
-		for (y = 0; y < NUM_ROWS / 4; y++) {
-		  trellis_array[y][x].pixels.setBrightness(BRIGHTNESS);
-		}
+	int var = 0;
+	while (var < 8) {
+		mdp.poll();
+		var++;
+		delay(100);
 	}
 
-/*
-// rainbow startup 
-  for(int i=0; i<NUM_ROWS*NUM_COLS; i++){
-      trellis.setPixelColor(i, Wheel(map(i, 0, NUM_ROWS*NUM_COLS, 0, 255))); //addressed with keynum
-      trellis.show();
-      delay(1);
-  }
-*/  
-  // key callback
+	if (!trellis.begin()) {
+		Serial.println("trellis.begin() failed!");
+		Serial.println("check your addresses.");
+		Serial.println("reset to try again.");
+		while(1);  // loop forever
+	}
+
+	// key callback
 	for (x = 0; x < NUM_COLS; x++) {
 		for (y = 0; y < NUM_ROWS; y++) {
 			trellis.activateKey(x, y, SEESAW_KEYPAD_EDGE_RISING, true);
@@ -163,11 +176,18 @@ void setup(){
 			trellis.registerCallback(x, y, keyCallback);
 		}
 	}
-	delay(300);
+
+	// set overall brightness for all pixels
+	for (x = 0; x < NUM_COLS / 4; x++) {
+		for (y = 0; y < NUM_ROWS / 4; y++) {
+		  trellis_array[y][x].pixels.setBrightness(BRIGHTNESS);
+		}
+	}
+
+	// clear grid leds
 	mdp.setAllLEDs(0);
 	sendLeds();
-	monomeRefresh = 0;
-	isInited = true;
+	
     // blink one led to show it's started up
     trellis.setPixelColor(0, 0xFFFFFF);
     trellis.show();

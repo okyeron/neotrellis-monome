@@ -233,8 +233,12 @@ void MonomeSerialDevice::processSerial() {
         	// [null, "led-grid", "key-grid", "digital-out", "digital-in", "encoder", "analog-in", "analog-out", "tilt", "led-ring"]
             //Serial.println("0x00 system / query ----------------------");
             Serial.write((uint8_t)0x00); // action: response, 0x00 = system
-            Serial.write((uint8_t)0x01); // section id, 1 = led-grid, 2 = key-grid, 5 = encoder/arc	## NEED devSect variable
+            Serial.write((uint8_t)0x01); // section id, 1 = led-grid, 2 = key-grid, 5 = encoder/arc
             Serial.write((uint8_t)numQuads);   // one Quad is 64 buttons
+
+            Serial.write((uint8_t)0x00); // send again with 2 = key-grid
+            Serial.write((uint8_t)0x02); // 
+            Serial.write((uint8_t)numQuads); 
 
             break;
 
@@ -271,7 +275,7 @@ void MonomeSerialDevice::processSerial() {
             readY = Serial.read();          // y offset 
             break;
 
-        case 0x05:
+        case 0x05:  // _SYS_GET_GRID_SIZE
             //Serial.println("0x05");
             Serial.write((uint8_t)0x03);             // system / request grid size
             Serial.write((uint8_t)gridX);                // gridX
