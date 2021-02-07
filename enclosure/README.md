@@ -19,9 +19,11 @@ The USB micro breakout is used to breakout 5v power/data from the Teensy and wor
 NOTE - The usb breakout setup here will not work with the Teensy 4. But it appears the Teensy 4 does not have the current limiting issue. However, using a T4 would require a slightly different case design/layout.
 
 ## Pins / Soldering / Assembly
-Pins used on the Teensy are VIN (5v from USB), GND, D+, D- (SMD pads on the underside), and then SCL (pin 19), SDA (pin 18).
+Pins used on the Teensy are VIN (5v from USB), GND, D+, D- (SMD pads on the underside), and then SCL (pin 19), SDA (pin 18).  
 
-Put a piece of electrical tape over the back of the teensy to avoid potential shorts when you stack it up (its a bit of a tight squeeze).
+Put a piece of electrical/kapton tape over the back of the teensy to avoid potential shorts when you stack it up (its a bit of a tight squeeze).  
+
+Just in case - also put a piece of electrical/kapton tape on the neotrellis board under where the teensy sits.  
 
 Putting the Teensy in the case, you want to be sure it's as flat as possible (see pix).
 
@@ -37,6 +39,8 @@ Kinda ugly example of the teensy and usb breakout wiring for this case layout:
 As a replacement for the slightly janky free-wiring, I designed a flexible PCB carrier for the Teensy and the USB breakout.
 
 This gets everything Super Flat and Awesome.
+
+As noted above - also put a piece of electrical/kapton tape on the neotrellis board under where the teensy sits.  
 
 ![<flexi-pcb>](<flexi-pcb4-1080.jpg>)
 ![<flexi-pcb>](<flexi-pcb-1080.jpg>)
