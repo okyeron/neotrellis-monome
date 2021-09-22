@@ -18,19 +18,15 @@ Compiled firmware for Feather M4 and ItsyBitsy M0 coming soon.
 
 At the time of writing, this code works as expected with the neotrellis-grid connected to a computer with Max running monome patches.
 
+Some people have reported issues with the neotrellis grid getting recognized by Windows 10. Windows users are advised to install serialosc 1.4.3 and bonjour print services (v2.0.2?).
+
 ### ansible / teletype / trilogy modules
 
-Does not work (with this configuration). Don’t ask (unless you know C well and can help me make changes to libavr32).
-
-Some people have undertaken trying to use an FTDI board in-between the teensy and the monome modules. Not 100% ready for prime time. [See the lines forum thread](https://llllllll.co/t/diy-monome-compatible-grid-w-adafruit-neotrellis/28106/) for more info.
+2021 updates to ansible / teletype / trilogy modules now support the neotrellis grid. It should work without modifications.
 
 ### norns /norns shield
 
-Officially unsupported. Hacking required. Proceed at your own risk. May void your warranty. Prohibited in some states. 
-
-Unfortunately this code will not work right off the shelf with the stock norns codebase (norns and norns shield) due to some USB device management stuff.
-
-But... there is a hack workaround, but it does require changes to the norns C code. It’s not hard, but steps will need to be repeated after updates, etc. See Below.
+As of update version 210607 (June 2021) it should be plug and play.
 
 ###  Fates
 
