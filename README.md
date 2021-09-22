@@ -26,7 +26,7 @@ Some people have reported issues with the neotrellis grid getting recognized by 
 
 ### norns /norns shield
 
-As of update version 210607 (June 2021) it should be plug and play.
+As of update version 210607 (June 2021) it should be plug and play. Previous versions are unsupported.
 
 ###  Fates
 
