@@ -18,11 +18,11 @@ Compiled firmware for Feather M4 and ItsyBitsy M0 coming soon.
 
 At the time of writing, this code works as expected with the neotrellis-grid connected to a computer with Max running monome patches.
 
-Some people have reported issues with the neotrellis grid getting recognized by Windows 10. Windows users are advised to install serialosc 1.4.3 and bonjour print services (v2.0.2?).
+Some people have reported issues with the neotrellis-grid getting recognized by Windows 10. Windows users are advised to install serialosc 1.4.3 and bonjour print services (v2.0.2?).
 
 ### ansible / teletype / trilogy modules
 
-2021 updates to ansible / teletype / trilogy modules now support the neotrellis grid. It should work without modifications.
+2021 updates to ansible / teletype / trilogy modules now support the neotrellis-grid. It should work without modifications.
 
 ### norns /norns shield
 
