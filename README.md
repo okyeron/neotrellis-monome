@@ -1,6 +1,5 @@
 # neotrellis monome compatible grid
 
-**Status**: work in progress. Not exactly noob friendly just yet.
 
 ## What is it?
 
@@ -10,7 +9,7 @@ Tested mostly using a Teensy 3.2 microcontroller.
 
 There is code for using an Adafruit ItsyBitsy M0 (and by extension the Feather M0/M4), but this requires some changes to the underlying libraries (replacing the Adafruit_USBD_Device library deep in the adafruit/arduino core libraries).
 
-Compiled firmware for Feather M4 and ItsyBitsy M0 coming soon.
+Compiled firmwares for Feather M4 and ItsyBitsy M0 are in the repo.
 
 ## compatibility
 
