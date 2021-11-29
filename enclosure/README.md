@@ -18,7 +18,9 @@ The USB micro breakout is used to breakout 5v power/data from the Teensy and wor
 
 NOTE - The usb breakout setup here will not work with the Teensy 4. But it appears the Teensy 4 does not have the current limiting issue. However, using a T4 would require a slightly different case design/layout.
 
-## Pins / Soldering / Assembly
+# Pins / Soldering / Assembly
+
+## Old way - Free-wiring
 Pins used on the Teensy are VIN (5v from USB), GND, D+, D- (SMD pads on the underside), and then SCL (pin 19), SDA (pin 18).  
 
 Put a piece of electrical/kapton tape over the back of the teensy to avoid potential shorts when you stack it up (its a bit of a tight squeeze).  
@@ -34,11 +36,15 @@ Kinda ugly example of the teensy and usb breakout wiring for this case layout:
 ![<teensy with usb breakout>](<teensy-wiring.jpg>)
 
 
-## next generation - flexible pcb carrier
+## New way - flexible pcb carrier
 
 As a replacement for the slightly janky free-wiring, I designed a flexible PCB carrier for the Teensy and the USB breakout.
 
+![<flexi-pcb>](<flexi-pcb.jpg>)
+
 This gets everything Super Flat and Awesome.
+
+The Flexi PCB is available [for sale here](https://denki-oto.weebly.com/store/p45/Flexible_PCB_Carrier_for_Neotrellis_Grid.html#/)
 
 As noted above - also put a piece of electrical/kapton tape on the neotrellis board under where the teensy sits.  
 

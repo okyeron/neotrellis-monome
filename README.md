@@ -49,6 +49,8 @@ For Fates devices this should be fucntional by default on the most recent firmwa
 
 Standard pin headers - 10 1x5 pin headers can be used for joining the neotrellis boards together. [See video](https://www.youtube.com/watch?v=petILmGcNwQ)
 
+Flexible PCB Carrier (Flexi PCB) for mounting the teensy to the neotrellis boards. [For sale here](https://denki-oto.weebly.com/store/p45/Flexible_PCB_Carrier_for_Neotrellis_Grid.html#/)
+
 ## before building
 
 * Test each neotrellis board individually using the Adafruit examples in the `File>Examples>Adafruit seesaw Library>Neotrellis` menu. The Basic sketch is good for testing individual boards. The `multitrellis>basic` sketch is good once you have all the boards connected and addresses assigned.
