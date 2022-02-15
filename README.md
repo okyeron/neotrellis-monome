@@ -115,31 +115,10 @@ Click the Upload button and select the firmware hex file you want to upload. Thi
 
 https://github.com/oldmanfury/neotrellis-grid-paletted
 
-## norns shield
+## norns shield / norns
 
-Update your norns shield to 201029 or newer.
+Update your norns to version 220129 or newer
 
-NOTE - Be aware this is a hack/workaround and is not officially supported.
-Proceed at your own risk
-
-NOTE 2 - this workaround will be erased with any norns system update. Re-apply after system updates.
-
-Connect to your norns shield via SSH and execute the following commands:  
-(See [the norns docs](https://monome.org/docs/norns/play/#ssh) for help on getting connected)
-```
-cd ~/
-sudo apt-get update
-sudo apt-get install libncurses5-dev libncursesw5-dev
-wget https://raw.githubusercontent.com/okyeron/fates/master/install/norns/files/device/device_monitor-201029.c
-cd ~/norns
-./stop.sh 
-sudo cp -f /home/we/device_monitor-201029.c /home/we/norns/matron/src/device/device_monitor.c
-rm /home/we/device_monitor-201029.c
-
-./waf configure --enable-ableton-link
-./waf build
-sudo reboot
-```
 
 ## testing with serialosc on MacOS
 
