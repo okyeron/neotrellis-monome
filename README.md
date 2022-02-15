@@ -92,7 +92,7 @@ Click the Upload button and select the firmware hex file you want to upload. Thi
 
 ### If you want to copile the firmware yourself to make changes, etc...
 
-In Arduino - be sure you have the settings in  `Tools -> USB Type` set to `Serial`
+In Arduino/Teensyduino - be sure you have the settings in  `Tools -> USB Type` set to `Serial`
 
 Not critical, but set `Tools -> CPU Speed` to `120 MHz (overclock)`
 
@@ -102,13 +102,16 @@ For reference: [here's a forum post on how to flash Teensy firmware](https://lll
 
 ## troubleshooting / testing 
 
-* Be sure you have the Adafruit Seesaw libraries installed and are up to date (via the Arduino Library Manager)
+* Triple check your address jumpers - [see this graphic](neotrellis_addresses.jpg) for a default layout of addresses and jumper positions for 8 neotrellis boards.
 
-* Be aware - the multitrellis array will fail to initialize if the addresses are wrong, or the wrong number of boards are attached.
+* Be sure you have the Adafruit Seesaw libraries installed and are up to date (via the Arduino/Teensyduino Library Manager)
 
-* There are Teensy specific i2c_t3 example sketches which can be used to double check your i2c addresses. See `File>Examples>i2c_t3>basic_scanner` for more.
+* Use the [multitrellis_test](multitrellis_test/multitrellis_test.ino) sketch to test fully assembled grid before flashing neotrellis_monome_teensy.
 
-* use [multitrellis_test](multitrellis_test/multitrellis_test.ino) sketch to test fully assembled grid before flashing neotrellis_monome_teensy.
+* Be aware - the multitrellis array will fail to initialize if the addresses are wrong, or the wrong number of boards are attached. If you get no LEDs are just some LEDs - then your addresses are likely the problem.
+
+* There are Teensy specific `i2c_t3` example sketches which can be used to double check your i2c addresses. See `File>Examples>i2c_t3>basic_scanner` in Arduino/Teensyduino for more.
+
 
 ## build help / support / troubleshooting
 
@@ -118,9 +121,6 @@ For reference: [here's a forum post on how to flash Teensy firmware](https://lll
 
 https://github.com/oldmanfury/neotrellis-grid-paletted
 
-## norns shield / norns
-
-Update your norns to version 220129 or newer
 
 
 ## testing with serialosc on MacOS
