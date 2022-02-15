@@ -84,17 +84,17 @@ For the Teensy firmware - be sure you have Arduino settings `Tools -> USB Type` 
 
 Not critical, but set `Tools -> CPU Speed` to `120 MHz (overclock)`
 
-### Load pre-compiled firmware w/ TyUpdater
+### Load pre-compiled firmware w/ TyUploader
 
 Get the firmware "hex" file from directory in this repo (download the entire repo ZIP file - not just individual files).
 
 Get TyTools [from GitHub here](https://github.com/Koromix/tytools/releases). More info here (https://koromix.dev/tytools).
 
-Copy TyUpdater to your machine and open it. Be sure your neotrellis-grid is plugged in. It should show up in the TyUpdater application.
+Install TyUploader and open it. Be sure your neotrellis-grid is plugged in. The grid/Teensy should show up in the TyUploader application... or select Teensy or Teensyduino from the pull down menu if needed.
 
-<img src="images/tyupdater.png" alt="tyupdater" width="382" height="193" />
+<img src="images/tyuploader.png" alt="tyupdater" width="319" height="190" />
 
-Click the Upload button and select the firmware hex file you want to upload. This should upload the firmware and the OMX-27 should reboot. That's it.
+Click the Upload button and select the firmware hex file you want to upload. This should upload the firmware and the neotrellis-grid should reboot. That's it.
 
 
 ## troubleshooting / testing 
