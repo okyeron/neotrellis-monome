@@ -78,12 +78,6 @@ Flexible PCB Carrier (Flexi PCB) for mounting the teensy to the neotrellis board
 
 ## firmware flashing
 
-For reference: [here's a forum post on how to flash Teensy firmware](https://llllllll.co/t/how-to-flash-the-firmware-on-a-teensy-micro-controller/20317)
-
-For the Teensy firmware - be sure you have Arduino settings `Tools -> USB Type` set to `Serial`
-
-Not critical, but set `Tools -> CPU Speed` to `120 MHz (overclock)`
-
 ### Load pre-compiled firmware w/ TyUploader
 
 Get the firmware "hex" file from directory in this repo (download the entire repo ZIP file - not just individual files).
@@ -95,6 +89,15 @@ Install TyUploader and open it. Be sure your neotrellis-grid is plugged in. The 
 <img src="images/tyuploader.png" alt="tyupdater" width="319" height="190" />
 
 Click the Upload button and select the firmware hex file you want to upload. This should upload the firmware and the neotrellis-grid should reboot. That's it.
+
+### If you want to copile the firmware yourself to make changes, etc...
+
+In Arduino - be sure you have the settings in  `Tools -> USB Type` set to `Serial`
+
+Not critical, but set `Tools -> CPU Speed` to `120 MHz (overclock)`
+
+For reference: [here's a forum post on how to flash Teensy firmware](https://llllllll.co/t/how-to-flash-the-firmware-on-a-teensy-micro-controller/20317)
+
 
 
 ## troubleshooting / testing 
