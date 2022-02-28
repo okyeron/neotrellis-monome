@@ -2,7 +2,7 @@
 
 Neotrellis Grid Code for Adafruit M0 and M4 controllers.
 
-Note - To compile this source and have it work properly, this requires some changes to the underlying libraries (replacing the Adafruit_USBD_Device library deep in the adafruit/arduino core libraries).
+Be sure you're updated to the most recent TinyUSB library version.
 
 
 ## Adafruit Kit
