@@ -29,7 +29,7 @@ As of update version 210607 (June 2021) it should be plug and play. Previous ver
 
 ###  Fates
 
-For Fates devices this should be fucntional by default on the most recent firmwares.
+For Fates devices this should be functional by default on the most recent firmwares.
 
 # Build
 
@@ -76,7 +76,7 @@ Flexible PCB Carrier (Flexi PCB) for mounting the teensy to the neotrellis board
 
 * Don't worry about the INT pin - it's not used in the grid software.
 
-## firmware flashing
+## firmware flashing - Teensy
 
 ### Load pre-compiled firmware w/ TyUploader
 
@@ -98,6 +98,9 @@ Not critical, but set `Tools -> CPU Speed` to `120 MHz (overclock)`
 
 For reference: [here's a forum post on how to flash Teensy firmware](https://llllllll.co/t/how-to-flash-the-firmware-on-a-teensy-micro-controller/20317)
 
+## other microcontrollers  
+
+See the repo directories for using the Adafruit Neotrellis M4 device (8x4 grid) or SAMD M0/M4 devices (like Adafruit's Feather/ItsyBitsy/QtPy/etc). Precompiled UF2 firmwares are available in those directories for some configurations.
 
 
 ## troubleshooting / testing 
