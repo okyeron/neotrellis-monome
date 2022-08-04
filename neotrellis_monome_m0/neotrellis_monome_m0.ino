@@ -139,14 +139,15 @@ void setup(){
 	uint8_t x, y;
 
 	// for Adafruit M0 or M4
-	pad_with_nulls(mfgstr, 32);
-	pad_with_nulls(prodstr, 32);
-	pad_with_nulls(serialstr, 32);
+//	pad_with_nulls(mfgstr, 32);
+//	pad_with_nulls(prodstr, 32);
+//	pad_with_nulls(serialstr, 32);
+
 	USBDevice.setManufacturerDescriptor(mfgstr);
 	USBDevice.setProductDescriptor(prodstr);
-	USBDevice.setSerialDescriptor(serialstr);
-
-	Serial.begin(115200);
+  USBDevice.setSerialDescriptor(serialstr);
+  
+  Serial.begin(115200);
   
 	mdp.isMonome = true;
 	mdp.deviceID = deviceID;
