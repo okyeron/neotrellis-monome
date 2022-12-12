@@ -5,11 +5,9 @@
 
 Code to use a set of [Adafruit NeoTrellis boards](https://www.adafruit.com/product/3954) as a monome grid clone.
 
-Tested mostly using a Teensy 3.2 microcontroller. 
+Tested mostly using a Teensy 3.2 microcontroller. Teensy 4 should work the same, but it does not have USB pads broken out to use a USB breakout board. 
 
-There is code for using an Adafruit ItsyBitsy M0 (and by extension the Feather M0/M4), but this requires some changes to the underlying libraries (replacing the Adafruit_USBD_Device library deep in the adafruit/arduino core libraries).
-
-Compiled firmwares for Feather M4 and ItsyBitsy M0 are in the repo.
+[There is code](neotrellis_monome_m0) for using an Adafruit SAMD21 M0/M4 boards like the Feather and ItsyBitsy, but this will probably require compiling the firmware for your specific board. Compiled firmwares for Feather M4 are in the repo.
 
 ## compatibility
 
