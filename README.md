@@ -3,7 +3,7 @@
 
 ## What is it?
 
-Code to use a set of [Adafruit NeoTrellis boards](https://www.adafruit.com/product/3954) as a monome grid clone.
+Code to use a set of [Adafruit NeoTrellis boards](https://www.adafruit.com/product/3954) as a monome grid clone using an off-the-shelf microcontroller.
 
 Tested mostly using a Teensy 3.2 microcontroller. Teensy 4 should work the same, but it does not have USB pads broken out to use a USB breakout board. 
 
