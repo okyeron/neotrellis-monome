@@ -2,7 +2,7 @@
 
 Neotrellis Grid Code for Adafruit M0 and M4 controllers.
 
-This code should work with any of the various Adafruit SAMD21 M0 or M4 controllers such as Feather, ItsyBitsy, etc. 
+This code should work with any of the various Adafruit SAMD21/51 M0/M4 controllers such as Feather, ItsyBitsy, etc. 
 
 __NOTE__ - You will need to recompile the code for the specific board you are using. Compiled firmwares such as `neotrellis_m4_8x8_featherM4.UF2` will ONLY work on that specific board type. 
 

@@ -7,7 +7,9 @@ Code to use a set of [Adafruit NeoTrellis boards](https://www.adafruit.com/produ
 
 Tested mostly using a Teensy 3.2 microcontroller. Teensy 4 should work the same, but it does not have USB pads broken out to use a USB breakout board. 
 
-[There is code](neotrellis_monome_m0) for using an Adafruit SAMD21 M0/M4 boards like the Feather and ItsyBitsy, but this will probably require compiling the firmware for your specific board. Compiled firmwares for Feather M4 are in the repo.
+[There is code](neotrellis_monome_m0) for using an Adafruit SAMD21/51 M0/M4 boards like the Feather and ItsyBitsy, but this will probably require compiling the firmware for your specific board. Compiled firmwares for Feather M4 are in the repo.
+
+Code for [RP2040](neotrellis_monome_rp2040) is also available, but this will probably require compiling the firmware for your specific board.
 
 ## compatibility
 

@@ -1,6 +1,6 @@
 /***********************************************************
  *  DIY monome compatible grid w/ Adafruit NeoTrellis
- *  for Feather M0 / M4
+ *  for RP2040 Pi Pico
  *  
  *  This code makes the Adafruit Neotrellis boards into a Monome compatible grid via monome's mext protocol
  *  ----> https://www.adafruit.com/product/3954
@@ -15,22 +15,22 @@
  *
 */
 
+// SET TOOLS USB STACK TO TinyUSB
 
 #include "MonomeSerialDevice.h"
 #include <Adafruit_NeoTrellis.h>
 
-// SET TOOLS USB STACK TO TinyUSB
-
-// IF USING ADAFRUIT M0 or M4 BOARD
-#define M0 1
 #include <Arduino.h>
 #include <Adafruit_TinyUSB.h>
 #include <elapsedMillis.h>
 
-
 #define NUM_ROWS 8 // DIM_Y number of rows of keys down
 #define NUM_COLS 16 // DIM_X number of columns of keys across
 #define NUM_LEDS NUM_ROWS*NUM_COLS
+
+// I2C pin defs for RP2040
+const byte I2C_SDA = 26;
+const byte I2C_SCL = 27;
 
 #define INT_PIN 9
 #define LED_PIN 13 // teensy LED used to show boot info
@@ -54,7 +54,7 @@ elapsedMillis monomeRefresh;
 String deviceID = "neo-monome";
 String serialNum = "m4216124";
 
-// DEVICE INFO FOR ADAFRUIT M0 or M4 
+// DEVICE INFO FOR TinyUSB
 char mfgstr[32] = "monome";
 char prodstr[32] = "monome";
 char serialstr[32] = "m4216124";
@@ -67,16 +67,16 @@ int prevLedBuffer[mdp.MAXLEDCOUNT];
 
 // NeoTrellis setup
 /*
-// 8x8 setup
+// 8x8 setup RP2040
 Adafruit_NeoTrellis trellis_array[NUM_ROWS / 4][NUM_COLS / 4] = {
-  { Adafruit_NeoTrellis(0x2F), Adafruit_NeoTrellis(0x2E) },
-  { Adafruit_NeoTrellis(0x32), Adafruit_NeoTrellis(0x30) }
+  { Adafruit_NeoTrellis(0x2F, &Wire1), Adafruit_NeoTrellis(0x2E, &Wire1) },
+  { Adafruit_NeoTrellis(0x32, &Wire1), Adafruit_NeoTrellis(0x30, &Wire1) }
 };
 */
-// 16x8 
+// 16x8 RP2040
 Adafruit_NeoTrellis trellis_array[NUM_ROWS / 4][NUM_COLS / 4] = {
-  { Adafruit_NeoTrellis(0x32), Adafruit_NeoTrellis(0x30), Adafruit_NeoTrellis(0x2F), Adafruit_NeoTrellis(0x2E)}, // top row
-  { Adafruit_NeoTrellis(0x33), Adafruit_NeoTrellis(0x31), Adafruit_NeoTrellis(0x3E), Adafruit_NeoTrellis(0x36) } // bottom row
+  { Adafruit_NeoTrellis(0x32, &Wire1), Adafruit_NeoTrellis(0x30, &Wire1), Adafruit_NeoTrellis(0x2F, &Wire1), Adafruit_NeoTrellis(0x2E, &Wire1)}, // top row
+  { Adafruit_NeoTrellis(0x33, &Wire1), Adafruit_NeoTrellis(0x31, &Wire1), Adafruit_NeoTrellis(0x3E, &Wire1), Adafruit_NeoTrellis(0x36, &Wire1) } // bottom row
 };
 
 Adafruit_MultiTrellis trellis((Adafruit_NeoTrellis *)trellis_array, NUM_ROWS / 4, NUM_COLS / 4);
@@ -120,10 +120,10 @@ TrellisCallback keyCallback(keyEvent evt){
   uint8_t y = evt.bit.NUM / NUM_COLS; 
 
   if(evt.bit.EDGE == SEESAW_KEYPAD_EDGE_RISING){
-    //Serial.println(" pressed ");
+//     Serial.println(" pressed ");
     mdp.sendGridKey(x, y, 1);
   }else if(evt.bit.EDGE == SEESAW_KEYPAD_EDGE_FALLING){
-    //Serial.println(" released ");
+//     Serial.println(" released ");
     mdp.sendGridKey(x, y, 0);
   }
   //sendLeds();
@@ -138,17 +138,15 @@ TrellisCallback keyCallback(keyEvent evt){
 void setup(){
 	uint8_t x, y;
 
-	// for Adafruit M0 or M4
-//	pad_with_nulls(mfgstr, 32);
-//	pad_with_nulls(prodstr, 32);
-//	pad_with_nulls(serialstr, 32);
-
 	USBDevice.setManufacturerDescriptor(mfgstr);
 	USBDevice.setProductDescriptor(prodstr);
-  USBDevice.setSerialDescriptor(serialstr);
+	USBDevice.setSerialDescriptor(serialstr);
   
-  Serial.begin(115200);
+	Serial.begin(115200);
   
+	Wire1.setSDA(I2C_SDA);
+	Wire1.setSCL(I2C_SCL);
+
 	mdp.isMonome = true;
 	mdp.deviceID = deviceID;
 	mdp.setupAsGrid(NUM_ROWS, NUM_COLS);
