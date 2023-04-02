@@ -69,7 +69,7 @@ void setup() {
     Serial.println("failed to begin trellis");
     while(1);
   }
-
+	
   /* the array can be addressed as x,y or with the key number */
   for(int i=0; i<Y_DIM*X_DIM; i++){
       trellis.setPixelColor(i, Wheel(map(i, 0, X_DIM*Y_DIM, 0, 255))); //addressed with keynum

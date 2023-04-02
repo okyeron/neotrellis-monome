@@ -190,6 +190,11 @@ void setup(){
 	sendLeds();
 	
     // blink one led to show it's started up
+  	for(int i=0; i< NUM_ROWS * NUM_COLS; i++){
+		 trellis.setPixelColor(i, 0xFFFFFF);
+		  trellis.show();
+		  delay(50);
+	}
     trellis.setPixelColor(0, 0xFFFFFF);
     trellis.show();
     delay(100);
