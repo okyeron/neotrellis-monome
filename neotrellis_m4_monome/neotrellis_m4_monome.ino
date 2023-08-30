@@ -11,11 +11,12 @@
 
 #define BRIGHTNESS 255 // overall grid brightness - use gamma table below to adjust levels
 
-#define R 255
-#define G 255
-#define B 255
+// RGB values - vary for colors other than white
+#define DEFAULT_R 255
+#define DEFAULT_G 255
+#define DEFAULT_B 255
 
-// DEVICE INFO FOR ADAFRUIT M0 or M4 
+// DEVICE INFO FOR ADAFRUIT M0 or M4
 char mfgstr[32] = "monome";
 char prodstr[32] = "monome";
 char serialstr[32] = "m4676123";
@@ -27,7 +28,7 @@ String serialNum = "m4676123";
 elapsedMillis monomeRefresh;
 bool isInited = false;
 
-int prevLedBuffer[32]; 
+int prevLedBuffer[32];
 
 // Monome class setup
 MonomeSerialDevice mdp;
@@ -38,7 +39,7 @@ MonomeSerialDevice mdp;
 NeoTrellisM4 trellis = NeoTrellisM4();
 
 // gamma table for 16 levels of brightness
-const uint8_t gammaTable[16] = { 0,  2,  3,  6,  11, 18, 25, 32, 41, 59, 70, 80, 92, 103, 115, 128}; 
+const uint8_t gammaTable[16] = { 0,  2,  3,  6,  11, 18, 25, 32, 41, 59, 70, 80, 92, 103, 115, 128};
 
 
 // ***************************************************************************
@@ -55,7 +56,7 @@ void pad_with_nulls(char* s, int len) {
 
 
 // ***************************************************************************
-// **                          FUNCTIONS FOR TRELLIS                        **   
+// **                          FUNCTIONS FOR TRELLIS                        **
 // ***************************************************************************
 
 
@@ -74,10 +75,13 @@ void setup() {
   USBDevice.setSerialDescriptor(serialstr);
 
   Serial.begin(115200);
-  
+
   mdp.isMonome = true;
   mdp.deviceID = deviceID;
   mdp.setupAsGrid(NUM_ROWS, NUM_COLS);
+  mdp.R = DEFAULT_R;
+  mdp.G = DEFAULT_G;
+  mdp.B = DEFAULT_B;
 
   trellis.begin();
 
@@ -102,15 +106,15 @@ void sendLeds(){
   uint8_t value, prevValue = 0;
   uint32_t hexColor;
   bool isDirty = false;
-  
+
   for(int i=0; i< NUM_ROWS * NUM_COLS; i++){
     value = mdp.leds[i];
     prevValue = prevLedBuffer[i];
     uint8_t gvalue = gammaTable[value];
-    
-    if (value != prevValue) {
-      //hexColor = (((R * value) >> 4) << 16) + (((G * value) >> 4) << 8) + ((B * value) >> 4); 
-      hexColor =  (((gvalue*R)/256) << 16) + (((gvalue*G)/256) << 8) + (((gvalue*B)/256) << 0);
+
+    if (value != prevValue || mdp.colorDirty) {
+      //hexColor = (((mdp.R * value) >> 4) << 16) + (((mdp.G * value) >> 4) << 8) + ((mdp.B * value) >> 4);
+      hexColor =  (((gvalue*mdp.R)/256) << 16) + (((gvalue*mdp.G)/256) << 8) + (((gvalue*mdp.B)/256) << 0);
       trellis.setPixelColor(i, hexColor);
 
       prevLedBuffer[i] = value;
@@ -119,6 +123,7 @@ void sendLeds(){
   }
   if (isDirty) {
     trellis.show();
+    mdp.colorDirty = false;
   }
 
 }
@@ -138,10 +143,10 @@ void loop() {
     if (isInited && monomeRefresh > 16) {
       keypadEvent e = trellis.read();
       uint8_t x  = e.bit.KEY % NUM_COLS;
-      uint8_t y = e.bit.KEY / NUM_COLS; 
+      uint8_t y = e.bit.KEY / NUM_COLS;
 
       //Serial.print((int)e.bit.KEY);
-      
+
       if (e.bit.EVENT == KEY_JUST_PRESSED) {
         mdp.sendGridKey(x, y, 1);
         //Serial.println(" pressed");
@@ -155,5 +160,5 @@ void loop() {
         sendLeds();
         monomeRefresh = 0;
     }
-  
+
 }

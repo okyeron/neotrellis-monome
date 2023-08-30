@@ -19,7 +19,7 @@ class MonomeArcEvent {
 class MonomeEventQueue {
     public:
         //void clearQueue();
-        
+
         bool gridEventAvailable();
         MonomeGridEvent readGridEvent();
         MonomeGridEvent sendGridKey();
@@ -28,7 +28,7 @@ class MonomeEventQueue {
         MonomeArcEvent readArcEvent();
         MonomeArcEvent sendArcDelta();
         MonomeArcEvent sendArcKey();
-       
+
         void addGridEvent(uint8_t x, uint8_t y, uint8_t pressed);
         void sendGridKey(uint8_t x, uint8_t y, uint8_t pressed);
         void addArcEvent(uint8_t index, int8_t delta);
@@ -36,10 +36,10 @@ class MonomeEventQueue {
         void sendArcKey(uint8_t index, uint8_t pressed);
 
     protected:
-        
+
     private:
         static const int MAXEVENTCOUNT = 50;
-        
+
         MonomeGridEvent emptyGridEvent;
         MonomeGridEvent gridEvents[MAXEVENTCOUNT];
         int gridEventCount = 0;
@@ -52,7 +52,7 @@ class MonomeEventQueue {
 };
 
 class MonomeSerialDevice : public MonomeEventQueue {
-    public: 
+    public:
         MonomeSerialDevice();
         void initialize();
         void setupAsGrid(uint8_t _rows, uint8_t _columns);
@@ -84,11 +84,16 @@ class MonomeSerialDevice : public MonomeEventQueue {
         static const int MAXLEDCOUNT = 256;
         uint8_t leds[MAXLEDCOUNT];
         String deviceID;
-        
-    private : 
+
+        uint8_t R = 255;
+        uint8_t G = 255;
+        uint8_t B = 255;
+        bool colorDirty = false;
+
+    private :
         bool arcDirty = false;
         bool gridDirty = false;
-        
+
 //        MonomeSerialDevice();
         void processSerial();
 };
