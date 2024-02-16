@@ -17,6 +17,12 @@
 
 // SET TOOLS USB STACK TO TinyUSB
 
+// Be sure you have these libraries installed
+//    Adafruit seesaw library 
+//    elapsedMillis
+//    Adafruit TinyUSB Library
+//    Adafruit NeoPixel
+
 #include "MonomeSerialDevice.h"
 #include <Adafruit_NeoTrellis.h>
 
@@ -24,13 +30,11 @@
 #include <Adafruit_TinyUSB.h>
 #include <elapsedMillis.h>
 
+#include "i2c_config.h" // look here to change settings for different boards
+
 #define NUM_ROWS 8 // DIM_Y number of rows of keys down
 #define NUM_COLS 16 // DIM_X number of columns of keys across
 #define NUM_LEDS NUM_ROWS*NUM_COLS
-
-// I2C pin defs for RP2040
-const byte I2C_SDA = 26;
-const byte I2C_SCL = 27;
 
 #define INT_PIN 9
 #define LED_PIN 13 // teensy LED used to show boot info
@@ -52,12 +56,12 @@ elapsedMillis monomeRefresh;
 
 // set your monome device name here
 String deviceID = "neo-monome";
-String serialNum = "m4216124";
+String serialNum = "m4216126";
 
 // DEVICE INFO FOR TinyUSB
 char mfgstr[32] = "monome";
 char prodstr[32] = "monome";
-char serialstr[32] = "m4216124";
+char serialstr[32] = "m4216126";
 
 // Monome class setup
 MonomeSerialDevice mdp;
@@ -69,14 +73,14 @@ int prevLedBuffer[mdp.MAXLEDCOUNT];
 /*
 // 8x8 setup RP2040
 Adafruit_NeoTrellis trellis_array[NUM_ROWS / 4][NUM_COLS / 4] = {
-  { Adafruit_NeoTrellis(0x2F, &Wire1), Adafruit_NeoTrellis(0x2E, &Wire1) },
-  { Adafruit_NeoTrellis(0x32, &Wire1), Adafruit_NeoTrellis(0x30, &Wire1) }
+  { Adafruit_NeoTrellis(addrRowOne[0], &MYWIRE), Adafruit_NeoTrellis(addrRowOne[1], &MYWIRE) },
+  { Adafruit_NeoTrellis(addrRowTwo[0], &MYWIRE), Adafruit_NeoTrellis(addrRowTwo[1], &MYWIRE) }
 };
 */
 // 16x8 RP2040
 Adafruit_NeoTrellis trellis_array[NUM_ROWS / 4][NUM_COLS / 4] = {
-  { Adafruit_NeoTrellis(0x32, &Wire1), Adafruit_NeoTrellis(0x30, &Wire1), Adafruit_NeoTrellis(0x2F, &Wire1), Adafruit_NeoTrellis(0x2E, &Wire1)}, // top row
-  { Adafruit_NeoTrellis(0x33, &Wire1), Adafruit_NeoTrellis(0x31, &Wire1), Adafruit_NeoTrellis(0x3E, &Wire1), Adafruit_NeoTrellis(0x36, &Wire1) } // bottom row
+  { Adafruit_NeoTrellis(addrRowOne[0], &MYWIRE), Adafruit_NeoTrellis(addrRowOne[1], &MYWIRE), Adafruit_NeoTrellis(addrRowOne[2], &MYWIRE), Adafruit_NeoTrellis(addrRowOne[3], &MYWIRE)}, // top row
+  { Adafruit_NeoTrellis(addrRowTwo[0], &MYWIRE), Adafruit_NeoTrellis(addrRowTwo[1], &MYWIRE), Adafruit_NeoTrellis(addrRowTwo[2], &MYWIRE), Adafruit_NeoTrellis(addrRowTwo[3], &MYWIRE) } // bottom row
 };
 
 Adafruit_MultiTrellis trellis((Adafruit_NeoTrellis *)trellis_array, NUM_ROWS / 4, NUM_COLS / 4);
@@ -138,14 +142,19 @@ TrellisCallback keyCallback(keyEvent evt){
 void setup(){
 	uint8_t x, y;
 
-	USBDevice.setManufacturerDescriptor(mfgstr);
-	USBDevice.setProductDescriptor(prodstr);
-	USBDevice.setSerialDescriptor(serialstr);
+	TinyUSBDevice.setManufacturerDescriptor(mfgstr);
+	TinyUSBDevice.setProductDescriptor(prodstr);
+	TinyUSBDevice.setSerialDescriptor(serialstr);
   
 	Serial.begin(115200);
   
-	Wire1.setSDA(I2C_SDA);
-	Wire1.setSCL(I2C_SCL);
+  // while( !TinyUSBDevice.mounted() ) delay(1);
+
+	MYWIRE.setSDA(I2C_SDA);
+	MYWIRE.setSCL(I2C_SCL);
+
+Serial.println(I2C_SDA);
+Serial.println(I2C_SCL);
 
 	mdp.isMonome = true;
 	mdp.deviceID = deviceID;
