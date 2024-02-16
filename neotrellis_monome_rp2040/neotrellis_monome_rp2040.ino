@@ -17,6 +17,9 @@
 
 // SET TOOLS USB STACK TO TinyUSB
 
+// RP2040 BOARDS REQUIRE Earle Philhower's Arduino core for RP2040 devices, arduino-pico
+// See https://learn.adafruit.com/rp2040-arduino-with-the-earlephilhower-core/overview
+
 // Be sure you have these libraries installed
 //    Adafruit seesaw library 
 //    elapsedMillis
