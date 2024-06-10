@@ -49,7 +49,7 @@ For Fates devices this should be functional by default on the most recent firmwa
 
 Standard pin headers - 10 1x5 pin headers can be used for joining the neotrellis boards together. [See video](https://www.youtube.com/watch?v=petILmGcNwQ)
 
-Flexible PCB Carrier (Flexi PCB) for mounting the teensy to the neotrellis boards. [For sale here](https://denki-oto.weebly.com/store/p45/Flexible_PCB_Carrier_for_Neotrellis_Grid.html#/)
+Flexible PCB Carrier (Flexi PCB) for mounting the teensy to the neotrellis boards. [For sale here](https://www.denki-oto.com/store/p45/Flexible_PCB_Carrier_for_Neotrellis_Grid.html#/)
 
 ## before building
 
