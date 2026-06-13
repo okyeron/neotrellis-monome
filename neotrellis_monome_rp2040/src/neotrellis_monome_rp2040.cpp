@@ -62,9 +62,9 @@ String deviceID = "neo-monome";
 String serialNum = "m4216126";
 
 // DEVICE INFO FOR TinyUSB
-char mfgstr[32] = "monome";
-char prodstr[32] = "monome";
-char serialstr[32] = "m4216126";
+char mfgstr[7] = "monome";
+char prodstr[5] = "grid";
+char serialstr[9] = "m4216126";
 
 // Monome class setup
 MonomeSerialDevice mdp;
@@ -138,6 +138,36 @@ TrellisCallback keyCallback(keyEvent evt){
   return 0;
 }
 
+
+// ***************************************************************************
+// **                                SEND LEDS                              **
+// ***************************************************************************
+
+void sendLeds(){
+  uint8_t value, prevValue = 0;
+  uint32_t hexColor;
+  bool isDirty = false;
+  
+  for(int i=0; i< NUM_ROWS * NUM_COLS; i++){
+    value = mdp.leds[i];
+    prevValue = prevLedBuffer[i];
+    uint8_t gvalue = gammaTable[value];
+    
+    if (value != prevValue) {
+      //hexColor = (((R * value) >> 4) << 16) + (((G * value) >> 4) << 8) + ((B * value) >> 4); 
+      hexColor =  (((gvalue*R)/256) << 16) + (((gvalue*G)/256) << 8) + (((gvalue*B)/256) << 0);
+      trellis.setPixelColor(i, hexColor);
+
+      prevLedBuffer[i] = value;
+      isDirty = true;
+    }
+  }
+  if (isDirty) {
+    trellis.show();
+  }
+
+}
+
 // ***************************************************************************
 // **                                 SETUP                                 **
 // ***************************************************************************
@@ -205,35 +235,6 @@ Serial.println(I2C_SCL);
     delay(100);
     trellis.setPixelColor(0, 0x000000);
     trellis.show();
-}
-
-// ***************************************************************************
-// **                                SEND LEDS                              **
-// ***************************************************************************
-
-void sendLeds(){
-  uint8_t value, prevValue = 0;
-  uint32_t hexColor;
-  bool isDirty = false;
-  
-  for(int i=0; i< NUM_ROWS * NUM_COLS; i++){
-    value = mdp.leds[i];
-    prevValue = prevLedBuffer[i];
-    uint8_t gvalue = gammaTable[value];
-    
-    if (value != prevValue) {
-      //hexColor = (((R * value) >> 4) << 16) + (((G * value) >> 4) << 8) + ((B * value) >> 4); 
-      hexColor =  (((gvalue*R)/256) << 16) + (((gvalue*G)/256) << 8) + (((gvalue*B)/256) << 0);
-      trellis.setPixelColor(i, hexColor);
-
-      prevLedBuffer[i] = value;
-      isDirty = true;
-    }
-  }
-  if (isDirty) {
-    trellis.show();
-  }
-
 }
 
 

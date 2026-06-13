@@ -46,6 +46,7 @@ void MonomeSerialDevice::poll() {
     //while (isMonome && Serial.available()) { processSerial(); };
     if (Serial.available()) {
       processSerial();
+      // Serial.flush();
     }
     //Serial.println("processSerial");
 }
@@ -90,6 +91,13 @@ void MonomeSerialDevice::clearAllLeds() {
 void MonomeSerialDevice::clearArcRing(uint8_t ring) {
     for (int i = ring << 6, upper = i + 64; i < upper; i++) leds[i] = 0;
     //Serial.println("clearArcRing");
+}
+
+bool MonomeSerialDevice::getTiltState(uint8_t sensor) {
+  return tiltState[sensor] > 0;
+}
+void MonomeSerialDevice::setTiltState(uint8_t sensor, uint8_t state) {
+  tiltState[sensor] = state;
 }
 
 void MonomeSerialDevice::refreshGrid() {
@@ -210,7 +218,7 @@ void MonomeSerialDevice::refresh() {
 }
 
 void MonomeSerialDevice::processSerial() {
-    uint8_t identifierSent;  // command byte sent from controller to matrix
+    byte identifierSent;  // command byte sent from controller to matrix
     uint8_t index, readX, readY, readN, readA;
     uint8_t dummy, gridNum, deviceAddress;  // for reading in data not used by the matrix
     uint8_t n, x, y, z, i;
@@ -239,7 +247,7 @@ void MonomeSerialDevice::processSerial() {
             Serial.write((uint8_t)0x00); // send again with 2 = key-grid
             Serial.write((uint8_t)0x02); // 
             Serial.write((uint8_t)numQuads); 
-
+            Serial.flush();
             break;
 
         case 0x01:  // system / ID
@@ -251,6 +259,7 @@ void MonomeSerialDevice::processSerial() {
                   Serial.write((uint8_t)0x00);
                 }
             }
+            Serial.flush();
             break;
 
         case 0x02:  // system / write ID
@@ -266,6 +275,7 @@ void MonomeSerialDevice::processSerial() {
             Serial.write((uint8_t)0x01);
             Serial.write((uint8_t)0);     // x offset - could be 0 or 8  ### NEEDS grid size variable
             Serial.write((uint8_t)0);     // y offset
+            Serial.flush();
             break;
 
         case 0x04:  // system / report ADDR
@@ -280,6 +290,7 @@ void MonomeSerialDevice::processSerial() {
             Serial.write((uint8_t)0x03);             // system / request grid size
             Serial.write((uint8_t)gridX);                // gridX
             Serial.write((uint8_t)gridY);                // gridY
+            Serial.flush();
             break;
 
         case 0x06:
@@ -591,9 +602,35 @@ void MonomeSerialDevice::processSerial() {
             // description: encoder switch down
             break;
 
-        case 0x80:  //   tilt / active response - 9 bytes [0x01, d]
+
+        case 0x80:  //   tilt / state request
+          // 0x80 tilt / state request
+          // bytes: 2
+          // structure: [0x80]
+          // description: request active states. device will reply with list.
+          readX = Serial.read();
+          getTiltState(readX);
+
             break;
-        case 0x81:  //   tilt - 8 bytes [0x80, n, xh, xl, yh, yl, zh, zl]
+        case 0x81:  //   tilt / set state on
+          // bytes: 2
+          // structure: [0x81, n]
+          // n = number
+          //   0-7
+          // description: enable individual tilt sensor.
+          readX = Serial.read();
+          setTiltState(readX, 1);
+
+            break;
+        case 0x82:  //   tilt / set state off
+          // bytes: 2
+          // structure: [0x82, n]
+          // n = number
+          //   0-7
+          // description: disable individual tilt sensor.
+          readX = Serial.read();
+          setTiltState(readX, 0);
+
             break;
 
         // 0x90 variable 64 LED ring 
@@ -786,7 +823,48 @@ void MonomeEventQueue::sendGridKey(uint8_t x, uint8_t y, uint8_t pressed) {
     }else{
       buf[0] = 0x20;
     }
-    Serial.write((uint8_t)buf[0]);
-    Serial.write((uint8_t)x);
-    Serial.write((uint8_t)y);
+    buf[1]=x;
+    buf[2]=y;
+    // Serial.write(buf,3);
+    
+    tud_cdc_write_char((uint8_t)buf[0]);
+    tud_cdc_write_char((uint8_t)x);
+    tud_cdc_write_char((uint8_t)y);
+    tud_cdc_n_write_flush(0);
+
+    // Serial.write((uint8_t)buf[0]);
+    // Serial.write((uint8_t)buf[1]);
+    // Serial.write((uint8_t)buf[2]);
+    // Serial.flush();
 }
+
+
+void MonomeEventQueue::sendTiltEvent(uint8_t n,int8_t xh,int8_t xl,int8_t yh,int8_t yl,int8_t zh,int8_t zl)
+{    
+    Serial.write((uint8_t)0x81);
+    Serial.write((uint8_t)n);
+    Serial.write((int8_t)xh);
+    Serial.write((int8_t)xl);
+    Serial.write((int8_t)yh);
+    Serial.write((int8_t)yl);
+    Serial.write((int8_t)zh);
+    Serial.write((int8_t)zl);
+ }
+
+// reference from https://github.com/hugelton/Btns/blob/main/Btns_Pico/MonomeSerialDevice.cpp
+// void MonomeSerialDevice::sendTiltEvent(uint8_t sensor, int16_t x, int16_t y, int16_t z) {
+//     if (sensor < 4 && tiltActive[sensor]) {
+//         lastTiltX[sensor] = x;
+//         lastTiltY[sensor] = y;
+//         lastTiltZ[sensor] = z;
+// 
+//         Serial.write((uint8_t)0x81);  // tiltイベントのプレフィックス
+//         Serial.write(sensor);
+//         Serial.write((uint8_t)(x >> 8));
+//         Serial.write((uint8_t)(x & 0xFF));
+//         Serial.write((uint8_t)(y >> 8));
+//         Serial.write((uint8_t)(y & 0xFF));
+//         Serial.write((uint8_t)(z >> 8));
+//         Serial.write((uint8_t)(z & 0xFF));
+//     }
+// }

@@ -2,6 +2,7 @@
 #define MONOMESERIAL_H
 
 #include <Arduino.h>
+#include "tusb.h"
 
 class MonomeGridEvent {
     public:
@@ -23,6 +24,7 @@ class MonomeEventQueue {
         bool gridEventAvailable();
         MonomeGridEvent readGridEvent();
         MonomeGridEvent sendGridKey();
+        MonomeGridEvent sendTiltEvent();
 
         bool arcEventAvailable();
         MonomeArcEvent readArcEvent();
@@ -34,8 +36,10 @@ class MonomeEventQueue {
         void addArcEvent(uint8_t index, int8_t delta);
         void sendArcDelta(uint8_t index, int8_t delta);
         void sendArcKey(uint8_t index, uint8_t pressed);
-        void sendTiltEvent(uint8_t n,uint8_t xh,uint8_t xl, uint8_t yh,uint8_t yl, uint8_t zh,uint8_t zl);
+        void sendTiltEvent(uint8_t n, int8_t xh, int8_t xl, int8_t yh, int8_t yl, int8_t zh, int8_t zl);
+//         void sendTiltEvent(uint8_t sensor, int16_t x, int16_t y, int16_t z);
 
+        
     protected:
         
     private:
@@ -69,12 +73,15 @@ class MonomeSerialDevice : public MonomeEventQueue {
         void clearArcLed(uint8_t enc, uint8_t led);
         void clearAllLeds();
         void clearArcRing(uint8_t ring);
+        bool getTiltState(uint8_t sensor);
+        void setTiltState(uint8_t sensor, uint8_t state);
         void refreshGrid();
         void refreshArc();
 
         bool active;
         bool isMonome;
         bool isGrid;
+        bool tiltState[8];
         uint8_t rows;
         uint8_t columns;
         uint8_t encoders;
@@ -89,7 +96,12 @@ class MonomeSerialDevice : public MonomeEventQueue {
     private : 
         bool arcDirty = false;
         bool gridDirty = false;
-        
+// 		uint8_t gridRotation;  // 0, 1, 2, or 3 for 0, 90, 180, 270 degrees
+// 		bool tiltActive[4] = {false, false, false, false};
+// 		int16_t lastTiltX[4] = {0};
+// 		int16_t lastTiltY[4] = {0};
+// 		int16_t lastTiltZ[4] = {0};
+       
 //        MonomeSerialDevice();
         void processSerial();
 };
