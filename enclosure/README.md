@@ -42,13 +42,9 @@ As a replacement for the slightly janky free-wiring, I designed a flexible PCB c
 
 ![<flexi-pcb>](<flexi-pcb.jpg>)
 
-This gets everything Super Flat and Awesome.
+Unfortunately the flexi-pcb is no longer available.  
 
-The Flexi PCB is available [for sale here](https://denki-oto.weebly.com/store/p45/Flexible_PCB_Carrier_for_Neotrellis_Grid.html#/)
+## Newest way - use a purpose built controller  
 
-As noted above - also put a piece of electrical/kapton tape on the neotrellis board under where the teensy sits.  
+The flex-pcb idea was deprecated as I made the [dink-ii controller](https://denki-oto.com/products/dink-ii-i2c-microcontroller) board which is plug-n-play (no soldering) and less expensive than a combination of other microcontroller + flex-pcb.  
 
-![<flexi-pcb>](<flexi-pcb4-1080.jpg>)
-![<flexi-pcb>](<flexi-pcb-1080.jpg>)
-![<flexi-pcb>](<flexi-pcb3-1080.jpg>)
-![<flexi-pcb>](<flexi-pcb2-1080.jpg>)
